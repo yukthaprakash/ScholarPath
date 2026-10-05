@@ -1,0 +1,23 @@
+[
+  {
+    "schemeA": "nsp-central-sector-ug",
+    "schemeB": "nsp-post-matric-sc",
+    "conflictType": "GOVT_POLICY",
+    "sourceCitation": "NSP Guidelines 2026-27 Clause 7.2",
+    "description": "A student can avail financial benefit from only ONE Central Sector Scholarship scheme at any given time."
+  },
+  {
+    "schemeA": "nsp-central-sector-ug",
+    "schemeB": "aicte-pragati-degree",
+    "conflictType": "EXCLUSION",
+    "sourceCitation": "AICTE Pragati Guidelines Clause 5.1",
+    "description": "Students receiving scholarship from AICTE Pragati cannot concurrently receive Central Sector Scheme scholarship."
+  },
+  {
+    "schemeA": "karnataka-ssp-post-matric",
+    "schemeB": "karnataka-vidyasiri-hostel",
+    "conflictType": "SAME_CATEGORY",
+    "sourceCitation": "SSP Karnataka Notice 2026",
+    "description": "Vidyasiri maintenance stipend is applicable only if hostel accommodation reimbursement is not claimed elsewhere."
+  }
+]

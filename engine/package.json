@@ -1,0 +1,19 @@
+{
+  "name": "@scholarpath/engine",
+  "version": "1.0.0",
+  "description": "Pure TypeScript eligibility rule engine, differentiators, and data structures for ScholarPath.",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "build": "tsc",
+    "test": "vitest run",
+    "type-check": "tsc --noEmit"
+  },
+  "dependencies": {
+    "zod": "^3.22.4"
+  },
+  "devDependencies": {
+    "typescript": "^5.4.0",
+    "vitest": "^1.4.0"
+  }
+}

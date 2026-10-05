@@ -1,0 +1,78 @@
+{
+  "id": "nsp-central-sector-ug",
+  "title": "Central Sector Scheme of Scholarships for College and University Students",
+  "shortDescription": "Financial assistance to meritorious students from low income families for higher education.",
+  "offeringAuthority": "Department of Higher Education, Ministry of Education, Govt. of India",
+  "authorityType": "CENTRAL_GOVT",
+  "schemeType": "SCHOLARSHIP",
+  "benefitDetails": {
+    "financialAmountPerYear": 12000,
+    "description": "Rs. 12,000 per annum at Graduation level for first 3 years and Rs. 20,000 per annum at Post-Graduation level."
+  },
+  "applicationWindow": {
+    "startDate": "2026-07-01",
+    "endDate": "2026-10-31",
+    "academicYear": "2026-27"
+  },
+  "officialUrl": "https://scholarships.gov.in",
+  "applicationUrl": "https://scholarships.gov.in/ApplicationForm/",
+  "lastVerified": "2026-10-05",
+  "sourceCitation": {
+    "portalName": "National Scholarship Portal (NSP)",
+    "url": "https://scholarships.gov.in",
+    "tier": 1,
+    "clauseRef": "Ministry Guidelines Section 4 & 5",
+    "verifiedDate": "2026-10-05",
+    "readOn": "2026-10-05"
+  },
+  "rules": [
+    {
+      "key": "financial.annualHouseholdIncome",
+      "label": "Gross annual family income <= Rs 4,50,000",
+      "operator": "LESS_THAN_OR_EQUAL",
+      "expectedValue": 450000,
+      "isActionable": true,
+      "isRequired": true,
+      "version": "1.0",
+      "clauseRef": "Clause 4.1"
+    },
+    {
+      "key": "academic.scorePercentage",
+      "label": "Scored above 80th percentile in Class 12 board examination",
+      "operator": "GREATER_THAN_OR_EQUAL",
+      "expectedValue": 80,
+      "isActionable": true,
+      "isRequired": true,
+      "version": "1.0",
+      "clauseRef": "Clause 3.2"
+    },
+    {
+      "key": "academic.educationLevel",
+      "label": "Enrolled in regular Undergraduate degree course",
+      "operator": "EQUALS",
+      "expectedValue": "UNDERGRADUATE",
+      "isActionable": false,
+      "isRequired": true,
+      "version": "1.0",
+      "clauseRef": "Clause 3.1"
+    },
+    {
+      "key": "certificates.INCOME_CERTIFICATE",
+      "label": "Valid Revenue Department Income Certificate available",
+      "operator": "EQUALS",
+      "expectedValue": true,
+      "isActionable": true,
+      "isRequired": true,
+      "version": "1.0",
+      "clauseRef": "Clause 6.1"
+    }
+  ],
+  "requiredCertificates": ["INCOME_CERTIFICATE", "MARKSHEET", "BONAFIDE_CERTIFICATE"],
+  "estimatedIssuanceDays": {
+    "INCOME_CERTIFICATE": 14,
+    "MARKSHEET": 7,
+    "BONAFIDE_CERTIFICATE": 5
+  },
+  "isDemo": true,
+  "version": "1.0"
+}

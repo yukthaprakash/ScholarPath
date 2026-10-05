@@ -1,0 +1,15 @@
+{
+  "name": "scholarpath-root",
+  "private": true,
+  "scripts": {
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "type-check": "tsc --noEmit --project engine/tsconfig.json",
+    "lint": "eslint engine/src --ext .ts"
+  },
+  "devDependencies": {
+    "typescript": "^5.4.0",
+    "vitest": "^1.4.0",
+    "zod": "^3.22.4"
+  }
+}

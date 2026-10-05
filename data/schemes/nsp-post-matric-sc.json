@@ -1,0 +1,64 @@
+{
+  "id": "nsp-post-matric-sc",
+  "title": "Post Matric Scholarship for Scheduled Caste Students (PMS-SC)",
+  "shortDescription": "Centrally sponsored scholarship scheme to provide financial support to SC students studying at post-matriculation level.",
+  "offeringAuthority": "Ministry of Social Justice and Empowerment, Govt. of India",
+  "authorityType": "CENTRAL_GOVT",
+  "schemeType": "SCHOLARSHIP",
+  "benefitDetails": {
+    "financialAmountPerYear": 13500,
+    "description": "Full non-refundable fee reimbursement plus maintenance allowance up to Rs 13,500/year."
+  },
+  "applicationWindow": {
+    "startDate": "2026-07-01",
+    "endDate": "2026-10-31",
+    "academicYear": "2026-27"
+  },
+  "officialUrl": "https://scholarships.gov.in",
+  "sourceCitation": {
+    "portalName": "National Scholarship Portal (NSP)",
+    "url": "https://scholarships.gov.in",
+    "tier": 1,
+    "clauseRef": "PMS-SC Revised Guidelines 2026 Clause 3",
+    "verifiedDate": "2026-10-02"
+  },
+  "rules": [
+    {
+      "key": "personal.casteCategory",
+      "label": "Must belong to Scheduled Caste (SC) category",
+      "operator": "EQUALS",
+      "expectedValue": "SC",
+      "isActionable": false,
+      "isRequired": true,
+      "version": "1.0",
+      "clauseRef": "Clause 2.1"
+    },
+    {
+      "key": "financial.annualHouseholdIncome",
+      "label": "Annual family income from all sources <= Rs 2,50,000",
+      "operator": "LESS_THAN_OR_EQUAL",
+      "expectedValue": 250000,
+      "isActionable": true,
+      "isRequired": true,
+      "version": "1.0",
+      "clauseRef": "Clause 4.1"
+    },
+    {
+      "key": "academic.educationLevel",
+      "label": "Enrolled in Post-Matric course (Diploma / Undergraduate / Postgraduate)",
+      "operator": "IN_ARRAY",
+      "expectedValue": ["DIPLOMA", "UNDERGRADUATE", "POSTGRADUATE", "DOCTORAL"],
+      "isActionable": false,
+      "isRequired": true,
+      "version": "1.0",
+      "clauseRef": "Clause 3.1"
+    }
+  ],
+  "requiredCertificates": ["CASTE_CERTIFICATE", "INCOME_CERTIFICATE", "MARKSHEET"],
+  "estimatedIssuanceDays": {
+    "CASTE_CERTIFICATE": 21,
+    "INCOME_CERTIFICATE": 14
+  },
+  "isDemo": true,
+  "version": "1.0"
+}
