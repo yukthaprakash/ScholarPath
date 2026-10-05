@@ -1,0 +1,21 @@
+{
+  "name": "scholarpath-root",
+  "version": "1.0.0",
+  "private": true,
+  "description": "ScholarPath — From Eligibility to Action",
+  "workspaces": [
+    "backend"
+  ],
+  "engines": {
+    "node": ">=20.0.0"
+  },
+  "scripts": {
+    "build": "npm --workspace=backend run build",
+    "dev": "npm --workspace=backend run dev",
+    "lint": "npm --workspace=backend run lint",
+    "typecheck": "npm --workspace=backend run typecheck",
+    "test": "npm --workspace=backend run test"
+  },
+  "author": "ScholarPath Team",
+  "license": "UNLICENSED"
+}
