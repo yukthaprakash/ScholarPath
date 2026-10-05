@@ -1,0 +1,85 @@
+{
+  "id": "demo-student-yuktha-01",
+  "academic": {
+    "educationLevel": "UNDERGRADUATE",
+    "courseName": "BE Computer Science and Engineering",
+    "currentYear": 2,
+    "scorePercentage": 82.5,
+    "cgpa": 8.4,
+    "gradingScale": 10.0,
+    "boardOrUniversity": "Visvesvaraya Technological University",
+    "instituteType": "GOVERNMENT",
+    "institutePincode": "560001",
+    "instituteState": "KARNATAKA",
+    "isInstituteGovtRegistered": true
+  },
+  "personal": {
+    "age": 19,
+    "gender": "FEMALE",
+    "casteCategory": "OBC",
+    "religion": "HINDU",
+    "isDisability": false,
+    "disabilityPercentage": 0,
+    "maritalStatus": "SINGLE",
+    "isSingleGirlChild": true,
+    "isOrphan": false
+  },
+  "demographics": {
+    "domicileState": "KARNATAKA",
+    "district": "BENGALURU_URBAN",
+    "areaType": "URBAN"
+  },
+  "financial": {
+    "annualHouseholdIncome": 180000,
+    "isParentGovernmentEmployee": false
+  },
+  "certificates": [
+    {
+      "type": "MARKSHEET",
+      "isAvailable": true,
+      "validUntil": "2099-12-31",
+      "issuedDate": "2024-06-15",
+      "issuingAuthority": "Karnataka Secondary Education Examination Board",
+      "certificateNumber": "SSLC-2024-88491",
+      "status": "VALID"
+    },
+    {
+      "type": "CASTE_CERTIFICATE",
+      "isAvailable": true,
+      "validUntil": "2029-05-10",
+      "issuedDate": "2024-05-10",
+      "issuingAuthority": "Tahsildar Bengaluru Urban",
+      "certificateNumber": "RD00392817462",
+      "status": "VALID"
+    },
+    {
+      "type": "DOMICILE_CERTIFICATE",
+      "isAvailable": true,
+      "validUntil": "2029-05-10",
+      "issuedDate": "2024-05-10",
+      "issuingAuthority": "Tahsildar Bengaluru Urban",
+      "certificateNumber": "RD00392817463",
+      "status": "VALID"
+    },
+    {
+      "type": "INCOME_CERTIFICATE",
+      "isAvailable": false,
+      "status": "NOT_ISSUED"
+    },
+    {
+      "type": "BONAFIDE_CERTIFICATE",
+      "isAvailable": true,
+      "validUntil": "2027-05-31",
+      "issuedDate": "2026-08-01",
+      "issuingAuthority": "Principal, Government Engineering College",
+      "certificateNumber": "GECB/BON/2026/492",
+      "status": "VALID"
+    }
+  ],
+  "documentsReadiness": {
+    "isAadhaarSeededWithBank": true,
+    "isNameMatchingAadhaar": true,
+    "isDobMatchingAadhaar": true,
+    "isIncomeCertificateValidCurrentYear": "UNSURE"
+  }
+}

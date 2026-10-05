@@ -1,0 +1,63 @@
+{
+  "id": "ugc-single-girl-child-pg",
+  "title": "UGC Post Graduate Indira Gandhi Scholarship for Single Girl Child",
+  "shortDescription": "Financial assistance to single girl children pursuing non-professional postgraduate degree courses.",
+  "offeringAuthority": "University Grants Commission (UGC)",
+  "authorityType": "UGC",
+  "schemeType": "SCHOLARSHIP",
+  "benefitDetails": {
+    "financialAmountPerYear": 36200,
+    "description": "Rs 36,200 per annum for 2 years (duration of PG course)."
+  },
+  "applicationWindow": {
+    "startDate": "2026-07-15",
+    "endDate": "2026-10-31",
+    "academicYear": "2026-27"
+  },
+  "officialUrl": "https://www.ugc.gov.in",
+  "sourceCitation": {
+    "portalName": "UGC Official Portal / NSP",
+    "url": "https://www.ugc.gov.in",
+    "tier": 1,
+    "clauseRef": "UGC Single Girl Child Scheme Guidelines 2026",
+    "verifiedDate": "2026-10-02"
+  },
+  "rules": [
+    {
+      "key": "personal.isSingleGirlChild",
+      "label": "Must be the only girl child in the family (or twin girls)",
+      "operator": "EQUALS",
+      "expectedValue": true,
+      "isActionable": false,
+      "isRequired": true,
+      "version": "1.0",
+      "clauseRef": "Clause 2.1"
+    },
+    {
+      "key": "academic.educationLevel",
+      "label": "Enrolled in 1st year Postgraduate degree program",
+      "operator": "EQUALS",
+      "expectedValue": "POSTGRADUATE",
+      "isActionable": false,
+      "isRequired": true,
+      "version": "1.0",
+      "clauseRef": "Clause 3.1"
+    },
+    {
+      "key": "personal.age",
+      "label": "Age at admission <= 30 years",
+      "operator": "LESS_THAN_OR_EQUAL",
+      "expectedValue": 30,
+      "isActionable": false,
+      "isRequired": true,
+      "version": "1.0",
+      "clauseRef": "Clause 3.2"
+    }
+  ],
+  "requiredCertificates": ["BONAFIDE_CERTIFICATE", "MARKSHEET"],
+  "estimatedIssuanceDays": {
+    "BONAFIDE_CERTIFICATE": 5
+  },
+  "isDemo": true,
+  "version": "1.0"
+}
