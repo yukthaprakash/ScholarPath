@@ -1,0 +1,49 @@
+{
+  "name": "scholarpath-backend",
+  "version": "1.0.0",
+  "private": true,
+  "description": "ScholarPath Backend API & Platform",
+  "main": "dist/server.js",
+  "engines": {
+    "node": ">=20.0.0"
+  },
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsx watch src/server.ts",
+    "start": "node dist/server.js",
+    "typecheck": "tsc --noEmit",
+    "lint": "eslint .",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "migrate": "tsx src/db/migrate.ts",
+    "data:check": "tsx src/cli/checkData.ts"
+  },
+  "dependencies": {
+    "cors": "^2.8.5",
+    "express": "^4.21.2",
+    "express-rate-limit": "^7.5.0",
+    "firebase-admin": "^12.7.0",
+    "helmet": "^8.0.0",
+    "pg": "^8.13.3",
+    "pino": "^9.6.0",
+    "pino-http": "^10.4.0",
+    "zod": "^3.24.2"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.20.0",
+    "@types/cors": "^2.8.17",
+    "@types/express": "^4.17.21",
+    "@types/node": "^20.17.19",
+    "@types/pg": "^8.11.11",
+    "@types/supertest": "^6.0.2",
+    "eslint": "^9.20.0",
+    "pino-pretty": "^13.0.0",
+    "supertest": "^7.0.0",
+    "tsx": "^4.19.2",
+    "typescript": "^5.7.3",
+    "typescript-eslint": "^8.24.0",
+    "vitest": "^2.1.8"
+  },
+  "author": "ScholarPath Team",
+  "license": "UNLICENSED"
+}

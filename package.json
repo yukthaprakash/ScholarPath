@@ -1,15 +1,31 @@
 {
   "name": "scholarpath-root",
+  "version": "1.0.0",
   "private": true,
+  "description": "ScholarPath — From Eligibility to Action",
+  "workspaces": [
+    "backend",
+    "frontend",
+    "engine"
+  ],
+  "engines": {
+    "node": ">=20.0.0"
+  },
   "scripts": {
-    "test": "vitest run",
+    "build": "npm --workspace=backend run build",
+    "dev": "npm --workspace=backend run dev",
+    "lint": "npm --workspace=backend run lint",
+    "typecheck": "npm --workspace=backend run typecheck && tsc --noEmit --project engine/tsconfig.json",
+    "type-check": "npm run typecheck",
+    "test": "vitest run && npm --workspace=backend run test",
     "test:watch": "vitest",
-    "type-check": "tsc --noEmit --project engine/tsconfig.json",
-    "lint": "eslint engine/src --ext .ts"
+    "data:check": "npm --workspace=backend run data:check"
   },
   "devDependencies": {
     "typescript": "^5.4.0",
     "vitest": "^1.4.0",
     "zod": "^3.22.4"
-  }
+  },
+  "author": "ScholarPath Team",
+  "license": "UNLICENSED"
 }
