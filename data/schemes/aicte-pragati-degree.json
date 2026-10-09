@@ -1,0 +1,74 @@
+{
+  "id": "aicte-pragati-degree",
+  "title": "AICTE Pragati Scholarship Scheme for Girl Students (Degree)",
+  "shortDescription": "Scholarship awarded to meritorious female students pursuing technical degree programs in AICTE approved institutions.",
+  "offeringAuthority": "All India Council for Technical Education (AICTE)",
+  "authorityType": "AICTE",
+  "schemeType": "SCHOLARSHIP",
+  "benefitDetails": {
+    "financialAmountPerYear": 50000,
+    "description": "Rs 50,000 per annum for maximum 4 years for first year admitted students."
+  },
+  "applicationWindow": {
+    "startDate": "2026-07-15",
+    "endDate": "2026-10-31",
+    "academicYear": "2026-27"
+  },
+  "officialUrl": "https://www.aicte-india.org/schemes/students-development-schemes/PRAGATI",
+  "sourceCitation": {
+    "portalName": "AICTE Official Portal",
+    "url": "https://www.aicte-india.org/schemes/students-development-schemes/PRAGATI",
+    "tier": 1,
+    "clauseRef": "Pragati Scheme Guidelines 2026-27 Section 2",
+    "verifiedDate": "2026-10-02"
+  },
+  "rules": [
+    {
+      "key": "personal.gender",
+      "label": "Must be a female student",
+      "operator": "EQUALS",
+      "expectedValue": "FEMALE",
+      "isActionable": false,
+      "isRequired": true,
+      "version": "1.0",
+      "clauseRef": "Clause 2.1"
+    },
+    {
+      "key": "academic.educationLevel",
+      "label": "Enrolled in 1st year Degree program in AICTE approved institute",
+      "operator": "EQUALS",
+      "expectedValue": "UNDERGRADUATE",
+      "isActionable": false,
+      "isRequired": true,
+      "version": "1.0",
+      "clauseRef": "Clause 3.1"
+    },
+    {
+      "key": "financial.annualHouseholdIncome",
+      "label": "Annual family income <= Rs 8,00,000",
+      "operator": "LESS_THAN_OR_EQUAL",
+      "expectedValue": 800000,
+      "isActionable": true,
+      "isRequired": true,
+      "version": "1.0",
+      "clauseRef": "Clause 4.1"
+    },
+    {
+      "key": "certificates.INCOME_CERTIFICATE",
+      "label": "State Revenue Department Income Certificate available",
+      "operator": "EQUALS",
+      "expectedValue": true,
+      "isActionable": true,
+      "isRequired": true,
+      "version": "1.0",
+      "clauseRef": "Clause 6.1"
+    }
+  ],
+  "requiredCertificates": ["INCOME_CERTIFICATE", "MARKSHEET", "BONAFIDE_CERTIFICATE"],
+  "estimatedIssuanceDays": {
+    "INCOME_CERTIFICATE": 14,
+    "BONAFIDE_CERTIFICATE": 5
+  },
+  "isDemo": true,
+  "version": "1.0"
+}

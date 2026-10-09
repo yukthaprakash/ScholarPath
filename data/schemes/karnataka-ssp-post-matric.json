@@ -1,0 +1,66 @@
+{
+  "id": "karnataka-ssp-post-matric",
+  "title": "Karnataka SSP Post-Matric Scholarship & Fee Reimbursement",
+  "shortDescription": "State Scholarship Portal scheme offering tuition fee reimbursement and maintenance stipend for post-matric Karnataka domiciled students.",
+  "offeringAuthority": "Government of Karnataka (Social Welfare / BCWD / Minority Welfare Departments)",
+  "authorityType": "STATE_GOVT",
+  "state": "KARNATAKA",
+  "schemeType": "SCHOLARSHIP",
+  "benefitDetails": {
+    "financialAmountPerYear": 25000,
+    "description": "Full/Partial Tuition Fee Reimbursement up to Rs 25,000 per year depending on caste and income slab."
+  },
+  "applicationWindow": {
+    "startDate": "2026-08-01",
+    "endDate": "2026-11-30",
+    "academicYear": "2026-27"
+  },
+  "officialUrl": "https://ssp.postmatric.karnataka.gov.in",
+  "sourceCitation": {
+    "portalName": "State Scholarship Portal (SSP Karnataka)",
+    "url": "https://ssp.postmatric.karnataka.gov.in",
+    "tier": 1,
+    "clauseRef": "SSP Post-Matric Guidelines 2026-27 Section 1",
+    "verifiedDate": "2026-10-02"
+  },
+  "rules": [
+    {
+      "key": "demographics.domicileState",
+      "label": "Must be a domicile of Karnataka state",
+      "operator": "EQUALS",
+      "expectedValue": "KARNATAKA",
+      "isActionable": false,
+      "isRequired": true,
+      "version": "1.0",
+      "clauseRef": "Clause 1.1"
+    },
+    {
+      "key": "financial.annualHouseholdIncome",
+      "label": "Annual household income <= Rs 2,50,000 (Cat-1/SC/ST) or <= Rs 1,00,000 (2A/2B/3A/3B OBC)",
+      "operator": "LESS_THAN_OR_EQUAL",
+      "expectedValue": 250000,
+      "isActionable": true,
+      "isRequired": true,
+      "version": "1.0",
+      "clauseRef": "Clause 3.1"
+    },
+    {
+      "key": "certificates.CASTE_CERTIFICATE",
+      "label": "Valid RD Number Caste Certificate (Nadakacheri)",
+      "operator": "EQUALS",
+      "expectedValue": true,
+      "isActionable": true,
+      "isRequired": true,
+      "version": "1.0",
+      "clauseRef": "Clause 5.1"
+    }
+  ],
+  "requiredCertificates": ["CASTE_CERTIFICATE", "INCOME_CERTIFICATE", "DOMICILE_CERTIFICATE"],
+  "estimatedIssuanceDays": {
+    "CASTE_CERTIFICATE": 21,
+    "INCOME_CERTIFICATE": 14,
+    "DOMICILE_CERTIFICATE": 21
+  },
+  "isDemo": true,
+  "version": "1.0"
+}

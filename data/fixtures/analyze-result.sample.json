@@ -1,0 +1,226 @@
+{
+  "$comment": "Illustrative sample output from analyzeAll illustrating all 4 state logic outcomes.",
+  "timestamp": "2026-10-05T14:46:00.000Z",
+  "today": "2026-10-05",
+  "studentId": "demo-student-001",
+  "matches": [
+    {
+      "schemeId": "nsp-central-sector-ug",
+      "schemeTitle": "Central Sector Scheme of Scholarships for College and University Students",
+      "schemeType": "SCHOLARSHIP",
+      "state": "ELIGIBLE",
+      "ruleTrace": [
+        {
+          "ruleKey": "financial.annualHouseholdIncome",
+          "ruleLabel": "Annual Household Income <= Rs 4.5 Lakhs",
+          "ruleVersion": "1.0",
+          "studentValue": 180000,
+          "expectedValue": 450000,
+          "outcome": "PASS",
+          "distance": { "numericDifference": 270000, "unit": "INR", "message": "Rs 270,000 below maximum limit" },
+          "isActionable": true,
+          "isRequired": true,
+          "clauseRef": "Clause 4.1"
+        },
+        {
+          "ruleKey": "academic.scorePercentage",
+          "ruleLabel": "Minimum 80% marks in Class 12",
+          "ruleVersion": "1.0",
+          "studentValue": 85,
+          "expectedValue": 80,
+          "outcome": "PASS",
+          "distance": { "numericDifference": 5, "unit": "Percentage", "message": "5% above minimum requirement" },
+          "isActionable": true,
+          "isRequired": true,
+          "clauseRef": "Clause 3.2"
+        }
+      ],
+      "failedRules": [],
+      "unknownRules": [],
+      "missingActionableRules": [],
+      "trustScore": {
+        "freshnessDays": 3,
+        "sourceTier": 1,
+        "coveragePercentage": 100,
+        "trustLevel": "HIGH",
+        "bannerMessage": "Verified Tier 1 Official Portal Source"
+      },
+      "financialBenefit": 12000,
+      "deadline": "2026-10-31",
+      "officialUrl": "https://scholarships.gov.in"
+    },
+    {
+      "schemeId": "aicte-pragati-degree",
+      "schemeTitle": "AICTE Pragati Scholarship Scheme for Girl Students (Degree)",
+      "schemeType": "SCHOLARSHIP",
+      "state": "NEARLY_ELIGIBLE",
+      "ruleTrace": [
+        {
+          "ruleKey": "personal.gender",
+          "ruleLabel": "Must be female student",
+          "ruleVersion": "1.0",
+          "studentValue": "FEMALE",
+          "expectedValue": "FEMALE",
+          "outcome": "PASS",
+          "isActionable": false,
+          "isRequired": true,
+          "clauseRef": "Clause 2.1"
+        },
+        {
+          "ruleKey": "certificates.INCOME_CERTIFICATE",
+          "ruleLabel": "Valid Income Certificate Available",
+          "ruleVersion": "1.0",
+          "studentValue": false,
+          "expectedValue": true,
+          "outcome": "FAIL",
+          "isActionable": true,
+          "isRequired": true,
+          "clauseRef": "Clause 6.1"
+        }
+      ],
+      "failedRules": [
+        {
+          "ruleKey": "certificates.INCOME_CERTIFICATE",
+          "ruleLabel": "Valid Income Certificate Available",
+          "ruleVersion": "1.0",
+          "studentValue": false,
+          "expectedValue": true,
+          "outcome": "FAIL",
+          "isActionable": true,
+          "isRequired": true,
+          "clauseRef": "Clause 6.1"
+        }
+      ],
+      "unknownRules": [],
+      "missingActionableRules": [
+        {
+          "ruleKey": "certificates.INCOME_CERTIFICATE",
+          "ruleLabel": "Valid Income Certificate Available",
+          "ruleVersion": "1.0",
+          "studentValue": false,
+          "expectedValue": true,
+          "outcome": "FAIL",
+          "isActionable": true,
+          "isRequired": true,
+          "clauseRef": "Clause 6.1"
+        }
+      ],
+      "trustScore": {
+        "freshnessDays": 5,
+        "sourceTier": 1,
+        "coveragePercentage": 100,
+        "trustLevel": "HIGH",
+        "bannerMessage": "Verified Tier 1 Official AICTE Source"
+      },
+      "financialBenefit": 50000,
+      "deadline": "2026-10-31",
+      "officialUrl": "https://www.aicte-india.org/schemes/students-development-schemes/PRAGATI"
+    },
+    {
+      "schemeId": "karnataka-vidyasiri-food-accommodation",
+      "schemeTitle": "Karnataka Vidyasiri Food and Accommodation Maintenance Scheme",
+      "schemeType": "HOSTEL_STIPEND",
+      "state": "NEEDS_VERIFICATION",
+      "ruleTrace": [
+        {
+          "ruleKey": "demographics.domicileState",
+          "ruleLabel": "Domicile must be Karnataka",
+          "ruleVersion": "1.0",
+          "studentValue": "KARNATAKA",
+          "expectedValue": "KARNATAKA",
+          "outcome": "PASS",
+          "isActionable": false,
+          "isRequired": true,
+          "clauseRef": "Clause 1.1"
+        },
+        {
+          "ruleKey": "demographics.district",
+          "ruleLabel": "District verification required",
+          "ruleVersion": "1.0",
+          "studentValue": null,
+          "expectedValue": "ANY_KARNATAKA_DISTRICT",
+          "outcome": "UNKNOWN",
+          "isActionable": false,
+          "isRequired": true,
+          "clauseRef": "Clause 1.2"
+        }
+      ],
+      "failedRules": [],
+      "unknownRules": [
+        {
+          "ruleKey": "demographics.district",
+          "ruleLabel": "District verification required",
+          "ruleVersion": "1.0",
+          "studentValue": null,
+          "expectedValue": "ANY_KARNATAKA_DISTRICT",
+          "outcome": "UNKNOWN",
+          "isActionable": false,
+          "isRequired": true,
+          "clauseRef": "Clause 1.2"
+        }
+      ],
+      "missingActionableRules": [],
+      "trustScore": {
+        "freshnessDays": 10,
+        "sourceTier": 1,
+        "coveragePercentage": 90,
+        "trustLevel": "HIGH",
+        "bannerMessage": "Verified Tier 1 SSP Karnataka Source"
+      },
+      "financialBenefit": 15000,
+      "deadline": "2026-11-15",
+      "officialUrl": "https://ssp.postmatric.karnataka.gov.in"
+    },
+    {
+      "schemeId": "ugc-single-girl-child-pg",
+      "schemeTitle": "UGC PG Indira Gandhi Scholarship for Single Girl Child",
+      "schemeType": "SCHOLARSHIP",
+      "state": "NOT_MATCHED",
+      "ruleTrace": [
+        {
+          "ruleKey": "academic.educationLevel",
+          "ruleLabel": "Must be enrolled in Postgraduate program",
+          "ruleVersion": "1.0",
+          "studentValue": "UNDERGRADUATE",
+          "expectedValue": "POSTGRADUATE",
+          "outcome": "FAIL",
+          "isActionable": false,
+          "isRequired": true,
+          "clauseRef": "Clause 3.1"
+        }
+      ],
+      "failedRules": [
+        {
+          "ruleKey": "academic.educationLevel",
+          "ruleLabel": "Must be enrolled in Postgraduate program",
+          "ruleVersion": "1.0",
+          "studentValue": "UNDERGRADUATE",
+          "expectedValue": "POSTGRADUATE",
+          "outcome": "FAIL",
+          "isActionable": false,
+          "isRequired": true,
+          "clauseRef": "Clause 3.1"
+        }
+      ],
+      "unknownRules": [],
+      "missingActionableRules": [],
+      "trustScore": {
+        "freshnessDays": 7,
+        "sourceTier": 1,
+        "coveragePercentage": 100,
+        "trustLevel": "HIGH",
+        "bannerMessage": "Verified Tier 1 UGC Source"
+      },
+      "financialBenefit": 36200,
+      "deadline": "2026-10-31",
+      "officialUrl": "https://www.ugc.gov.in"
+    }
+  ],
+  "summary": {
+    "eligibleCount": 1,
+    "nearlyEligibleCount": 1,
+    "needsVerificationCount": 1,
+    "notMatchedCount": 1,
+    "totalFinancialOpportunity": 113200
+  }
+}

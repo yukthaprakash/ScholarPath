@@ -40,3 +40,11 @@ Thumbs.db
 *.njsproj
 *.sln
 *.sw?
+
+# Agent rules
+.agents/rules/99-my-role.md
+
+# Dependencies
+node_modules/
+**/node_modules/
+

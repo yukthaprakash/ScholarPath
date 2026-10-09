@@ -1,0 +1,29 @@
+{
+  "certificateType": "INCOME_CERTIFICATE",
+  "title": "How to Obtain an Official Income Certificate (Karnataka & Central)",
+  "issuingAuthority": "Tahsildar / Revenue Department / Nadakacheri / Seva Sindhu",
+  "estimatedProcurementDays": 14,
+  "requiredDocuments": [
+    "Salary slip / Form 16 or Income Affidavit on Rs 20 stamp paper",
+    "Ration Card / Voter ID / Aadhaar Card proof of address",
+    "Self-declaration of family annual income from all sources"
+  ],
+  "steps": [
+    {
+      "stepNumber": 1,
+      "title": "Online Application via Seva Sindhu",
+      "description": "Log into sevasindhuservices.karnataka.gov.in and select Revenue Department -> Income Certificate."
+    },
+    {
+      "stepNumber": 2,
+      "title": "Field Verification",
+      "description": "Village Accountant / Revenue Inspector conducts field inquiry regarding family occupation and land holdings."
+    },
+    {
+      "stepNumber": 3,
+      "title": "Issuance of Digitally Signed Certificate",
+      "description": "Download 21-digit RD Number certificate with Tahsildar digital signature."
+    }
+  ],
+  "validityPeriod": "5 Years in Karnataka (unless income slab changes significantly)."
+}

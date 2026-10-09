@@ -1,0 +1,67 @@
+{
+  "id": "nsp-post-matric-st",
+  "title": "Post Matric Scholarship for Scheduled Tribe Students (PMS-ST)",
+  "shortDescription": "Centrally sponsored scheme to provide financial assistance to Scheduled Tribe students studying at post-matriculation level.",
+  "offeringAuthority": "Ministry of Tribal Affairs, Govt. of India",
+  "authorityType": "CENTRAL_GOVT",
+  "schemeType": "SCHOLARSHIP",
+  "benefitDetails": {
+    "financialAmountPerYear": 13500,
+    "description": "Tuition fee reimbursement plus maintenance allowance up to Rs 13,500/year for hostellers."
+  },
+  "applicationWindow": {
+    "startDate": "2026-07-01",
+    "endDate": "2026-10-31",
+    "academicYear": "2026-27"
+  },
+  "officialUrl": "https://scholarships.gov.in",
+  "applicationUrl": "https://scholarships.gov.in/ApplicationForm/",
+  "lastVerified": "2026-10-05",
+  "sourceCitation": {
+    "portalName": "National Scholarship Portal (NSP)",
+    "url": "https://scholarships.gov.in",
+    "tier": 1,
+    "clauseRef": "PMS-ST Guidelines Section 3",
+    "verifiedDate": "2026-10-05",
+    "readOn": "2026-10-05"
+  },
+  "rules": [
+    {
+      "key": "personal.casteCategory",
+      "label": "Must belong to Scheduled Tribe (ST) category",
+      "operator": "EQUALS",
+      "expectedValue": "ST",
+      "isActionable": false,
+      "isRequired": true,
+      "version": "1.0",
+      "clauseRef": "Clause 2.1"
+    },
+    {
+      "key": "financial.annualHouseholdIncome",
+      "label": "Annual family income from all sources <= Rs 2,50,000",
+      "operator": "LESS_THAN_OR_EQUAL",
+      "expectedValue": 250000,
+      "isActionable": true,
+      "isRequired": true,
+      "version": "1.0",
+      "clauseRef": "Clause 4.1"
+    },
+    {
+      "key": "academic.educationLevel",
+      "label": "Enrolled in Post-Matric course",
+      "operator": "IN_ARRAY",
+      "expectedValue": ["DIPLOMA", "UNDERGRADUATE", "POSTGRADUATE", "DOCTORAL"],
+      "isActionable": false,
+      "isRequired": true,
+      "version": "1.0",
+      "clauseRef": "Clause 3.1"
+    }
+  ],
+  "requiredCertificates": ["CASTE_CERTIFICATE", "INCOME_CERTIFICATE", "MARKSHEET"],
+  "estimatedIssuanceDays": {
+    "CASTE_CERTIFICATE": 21,
+    "INCOME_CERTIFICATE": 14
+  },
+  "isDemo": true,
+  "version": "1.0"
+}
