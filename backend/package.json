@@ -15,7 +15,8 @@
     "lint": "eslint .",
     "test": "vitest run",
     "test:watch": "vitest",
-    "migrate": "tsx src/db/migrate.ts"
+    "migrate": "tsx src/db/migrate.ts",
+    "data:check": "tsx src/cli/checkData.ts"
   },
   "dependencies": {
     "cors": "^2.8.5",

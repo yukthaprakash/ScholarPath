@@ -38,3 +38,6 @@ jobs:
           NODE_ENV: test
           AUTH_MODE: demo
           DATABASE_URL: postgresql://postgres:postgres@localhost:5432/scholarpath_test
+
+      - name: Run Data Check
+        run: npm run data:check

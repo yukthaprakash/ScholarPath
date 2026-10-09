@@ -14,7 +14,8 @@
     "dev": "npm --workspace=backend run dev",
     "lint": "npm --workspace=backend run lint",
     "typecheck": "npm --workspace=backend run typecheck",
-    "test": "npm --workspace=backend run test"
+    "test": "npm --workspace=backend run test",
+    "data:check": "npm --workspace=backend run data:check"
   },
   "author": "ScholarPath Team",
   "license": "UNLICENSED"
