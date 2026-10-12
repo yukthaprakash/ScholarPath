@@ -19,6 +19,9 @@
     "type-check": "npm run typecheck",
     "test": "vitest run && npm --workspace=backend run test",
     "test:watch": "vitest",
+    "db:seed": "npm --workspace=backend run db:seed",
+    "seed:schemes": "npm --workspace=backend run seed:schemes",
+    "seed:schemes:dry": "npm --workspace=backend run seed:schemes:dry",
     "data:check": "npm --workspace=backend run data:check"
   },
   "devDependencies": {
