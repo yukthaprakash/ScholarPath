@@ -11,6 +11,7 @@ import { authRouter } from './routes/auth';
 import { profileRouter } from './routes/profile';
 import { documentRouter } from './routes/documents';
 import { schemeRouter } from './routes/schemes';
+import { eligibilityRouter } from './routes/eligibility';
 import { NotFoundError } from './errors/AppError';
 
 export function createApp(): Express {
@@ -61,12 +62,14 @@ export function createApp(): Express {
   app.use('/', profileRouter);
   app.use('/', documentRouter);
   app.use('/', schemeRouter);
+  app.use('/', eligibilityRouter);
 
   // Mount API v1 prefix aliases
   app.use('/api/v1', authRouter);
   app.use('/api/v1', profileRouter);
   app.use('/api/v1', documentRouter);
   app.use('/api/v1', schemeRouter);
+  app.use('/api/v1', eligibilityRouter);
 
   // 8. 404 Catch-All for Undefined Endpoints
   app.use((_req, _res, next) => {
