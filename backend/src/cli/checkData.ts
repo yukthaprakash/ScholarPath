@@ -25,8 +25,13 @@ export async function checkData(): Promise<void> {
       const content = fs.readFileSync(filePath, 'utf-8');
       const json = JSON.parse(content);
 
-      if (!json.slug || !json.title || !json.type || !json.authority) {
-        console.error(`[Data Check] Error in ${file}: missing required fields (slug, title, type, authority)`);
+      const id = json.id || json.slug;
+      const title = json.title;
+      const type = json.schemeType || json.type;
+      const authority = json.offeringAuthority || json.authority;
+
+      if (!id || !title || !type || !authority) {
+        console.error(`[Data Check] Error in ${file}: missing required fields (id/slug, title, schemeType/type, offeringAuthority/authority)`);
         errorCount++;
       }
     } catch (err) {
