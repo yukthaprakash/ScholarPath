@@ -1,0 +1,19 @@
+{
+  "name": "@scholarpath/ai",
+  "version": "1.0.0",
+  "description": "ScholarPath AI explanation layer and safety guard",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "build": "tsc",
+    "test": "vitest run",
+    "type-check": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@scholarpath/engine": "*"
+  },
+  "devDependencies": {
+    "typescript": "^5.4.0",
+    "vitest": "^1.4.0"
+  }
+}

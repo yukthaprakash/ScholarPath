@@ -1,6 +1,8 @@
 import { StudentProfile } from '../types/profile';
 import { PassportDocument } from '../types/passport';
 import { DEFAULT_DEMO_PROFILE } from '../fixtures/defaultDemoProfile';
+import { apiClient } from './apiClient';
+import { toBackendProfile, toFrontendProfile, BackendProfileRecord } from './profileAdapter';
 
 const PROFILE_STORAGE_KEY = 'scholarpath_student_profile';
 
@@ -20,7 +22,7 @@ export interface ProfileCompletionStats {
 
 export class ProfileService {
   /**
-   * Load profile from localStorage or fallback to demo profile
+   * Load profile synchronously from localStorage or fallback to demo profile
    */
   public getProfile(): StudentProfile {
     try {
@@ -29,7 +31,7 @@ export class ProfileService {
         return JSON.parse(stored) as StudentProfile;
       }
     } catch {
-      // Fallback on error
+      // Fallback on parse error
     }
     return DEFAULT_DEMO_PROFILE;
   }
@@ -52,6 +54,47 @@ export class ProfileService {
   public resetToDefault(): StudentProfile {
     localStorage.setItem(PROFILE_STORAGE_KEY, JSON.stringify(DEFAULT_DEMO_PROFILE));
     return DEFAULT_DEMO_PROFILE;
+  }
+
+  /**
+   * Fetch authenticated user's profile from real backend API: GET /api/v1/profile
+   */
+  public async getProfileFromBackend(): Promise<StudentProfile> {
+    const cached = this.getProfile();
+    try {
+      const response = await apiClient.get<{ profile: BackendProfileRecord }>('/profile');
+      if (response && response.profile) {
+        // Map backend record to frontend model, merging with cached details for any non-persisted UI fields
+        const mapped = toFrontendProfile(response.profile, cached);
+        this.saveProfile(mapped);
+        return mapped;
+      }
+      return cached;
+    } catch (err) {
+      // Propagate error to caller for clear UI error states, but retain local cache
+      throw err;
+    }
+  }
+
+  /**
+   * Persist student profile updates to real backend API: PUT /api/v1/profile
+   */
+  public async saveProfileToBackend(profile: StudentProfile): Promise<StudentProfile> {
+    const payload = toBackendProfile(profile);
+    try {
+      const response = await apiClient.put<{ profile: BackendProfileRecord }>('/profile', payload);
+      if (response && response.profile) {
+        const mapped = toFrontendProfile(response.profile, profile);
+        this.saveProfile(mapped);
+        return mapped;
+      }
+      this.saveProfile(profile);
+      return profile;
+    } catch (err) {
+      // On failure, save locally as draft but re-throw so UI can notify the user
+      this.saveProfile(profile);
+      throw err;
+    }
   }
 
   /**
@@ -131,7 +174,6 @@ export class ProfileService {
       },
     };
   }
-
 }
 
 export class DocumentService {

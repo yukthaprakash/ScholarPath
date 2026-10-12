@@ -4,6 +4,11 @@ export default defineConfig({
   test: {
     globals: true,
     environment: 'node',
-    include: ['engine/**/*.test.ts', 'ai/**/*.test.ts', 'tests/**/*.test.ts'],
+    include: [
+      'engine/**/*.test.ts',
+      'ai/**/*.test.ts',
+      'tests/**/*.test.ts',
+      'frontend/**/*.test.ts',
+    ],
   },
 });

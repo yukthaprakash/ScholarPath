@@ -1,4 +1,4 @@
-import { SchemeMatch, StudentProfile } from '../engine/src/types.js';
+import { SchemeMatch, StudentProfile } from '@scholarpath/engine';
 
 export function buildSystemPrompt(language: 'en' | 'kn' | 'hi' = 'en'): string {
   if (language === 'kn') {
