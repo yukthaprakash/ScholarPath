@@ -12,10 +12,10 @@
     "node": ">=20.0.0"
   },
   "scripts": {
-    "build": "npm --workspace=backend run build",
+    "build": "npm --workspace=engine run build && npm --workspace=backend run build",
     "dev": "npm --workspace=backend run dev",
     "lint": "npm --workspace=backend run lint",
-    "typecheck": "npm --workspace=backend run typecheck && tsc --noEmit --project engine/tsconfig.json",
+    "typecheck": "npm --workspace=engine run build && npm --workspace=backend run typecheck",
     "type-check": "npm run typecheck",
     "test": "vitest run && npm --workspace=backend run test",
     "test:watch": "vitest",

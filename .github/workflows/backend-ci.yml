@@ -26,6 +26,9 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
+      - name: Build engine
+        run: npm --workspace=engine run build
+
       - name: Run ESLint
         run: npm run lint
 
