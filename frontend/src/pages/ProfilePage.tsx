@@ -8,33 +8,72 @@ import { Input } from '../components/common/Input';
 import { Select } from '../components/common/Select';
 import { StatusBadge } from '../components/common/StatusBadge';
 import { Link } from 'react-router-dom';
-import { 
-  RefreshCw, 
-  Sparkles, 
-  Edit3, 
-  CheckCircle2, 
-  User, 
-  GraduationCap, 
-  Wallet, 
-  MapPin, 
+import {
+  RefreshCw,
+  Sparkles,
+  Edit3,
+  CheckCircle2,
+  AlertTriangle,
+  User,
+  GraduationCap,
+  Wallet,
+  MapPin,
   Award,
   FileCheck,
   Heart,
   X,
-  Save
+  Save,
+  Clock,
+  HelpCircle
 } from 'lucide-react';
 
+interface ToastState {
+  show: boolean;
+  type: 'success' | 'error';
+  message: string;
+}
+
 export const ProfilePage: React.FC = () => {
-  const { profile, completionStats, recalculateEligibility, updateProfile } = useProfile();
+  const {
+    profile,
+    completionStats,
+    recalculateEligibility,
+    updateProfile,
+    lastEvaluatedAt
+  } = useProfile();
 
   const [editingSection, setEditingSection] = useState<string | null>(null);
-  const [showNotification, setShowNotification] = useState(false);
+  const [toast, setToast] = useState<ToastState>({ show: false, type: 'success', message: '' });
   const [tempProfile, setTempProfile] = useState<StudentProfile>({ ...profile });
+  const [isRecalculating, setIsRecalculating] = useState(false);
 
   const handleRecalculate = () => {
-    recalculateEligibility();
-    setShowNotification(true);
-    setTimeout(() => setShowNotification(false), 4500);
+    setIsRecalculating(true);
+    try {
+      const res = recalculateEligibility();
+      if (res.success) {
+        setToast({
+          show: true,
+          type: 'success',
+          message: `Eligibility evaluated successfully! ${res.eligibleCount} scheme(s) currently match your profile. Results refreshed on Dashboard and Explore.`,
+        });
+      } else {
+        setToast({
+          show: true,
+          type: 'error',
+          message: `Evaluation failed: ${res.errorMessage || 'Unknown rule processing error'}. Please verify your profile fields.`,
+        });
+      }
+    } catch (err: unknown) {
+      setToast({
+        show: true,
+        type: 'error',
+        message: err instanceof Error ? err.message : 'Evaluation rule processing failure occurred.',
+      });
+    } finally {
+      setIsRecalculating(false);
+      setTimeout(() => setToast((prev) => ({ ...prev, show: false })), 5000);
+    }
   };
 
   const startEditing = (section: string) => {
@@ -58,18 +97,41 @@ export const ProfilePage: React.FC = () => {
     return <StatusBadge status="MISSING" size="sm" customLabel="Incomplete" />;
   };
 
+  // Identify fields needing verification
+  const verificationNeeds: string[] = [];
+  if (!profile.hasIncomeCertificate) {
+    verificationNeeds.push('Revenue Department Income Certificate reference pending');
+  }
+  if (['OBC', 'SC', 'ST'].includes(profile.socialCategory) && !profile.casteCertificateAvailable) {
+    verificationNeeds.push('Caste certificate reference pending for reserved category schemes');
+  }
+  if (profile.documents.some((d) => d.verificationStatus === 'NEEDS_VERIFICATION')) {
+    verificationNeeds.push('One or more certificate metadata records require authority verification');
+  }
+
+  const formattedLastUpdated = profile.updatedAt
+    ? new Date(profile.updatedAt).toLocaleDateString('en-IN', {
+        day: '2-digit',
+        month: 'short',
+        year: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit',
+      })
+    : 'Recently';
+
   return (
     <div className="space-y-6">
       <PageHeader
         title="Student Profile & Eligibility DNA"
-        subtitle="Your profile is the single source of truth used for evaluating official scholarship criteria."
+        subtitle="Your profile is the single source of truth for all deterministic scholarship matching."
         action={
           <div className="flex items-center gap-2">
             <Button
               size="sm"
               variant="gold"
               onClick={handleRecalculate}
-              leftIcon={<RefreshCw className="w-3.5 h-3.5" />}
+              disabled={isRecalculating}
+              leftIcon={<RefreshCw className={`w-3.5 h-3.5 ${isRecalculating ? 'animate-spin' : ''}`} />}
             >
               Recalculate Eligibility
             </Button>
@@ -82,20 +144,36 @@ export const ProfilePage: React.FC = () => {
         }
       />
 
-      {/* Recalculate Toast Banner */}
-      {showNotification && (
-        <div className="p-3.5 bg-green-surface border border-green/30 text-green rounded-md text-xs font-semibold flex items-center justify-between animate-fade-in shadow-subtle">
+      {/* Recalculate Feedback Toast Banner */}
+      {toast.show && (
+        <div
+          role="alert"
+          className={`p-3.5 rounded-md text-xs font-semibold flex items-center justify-between shadow-subtle animate-fade-in ${
+            toast.type === 'success'
+              ? 'bg-green-surface border border-green/30 text-green'
+              : 'bg-red-50 border border-red-200 text-red-700'
+          }`}
+        >
           <div className="flex items-center gap-2">
-            <CheckCircle2 className="w-4 h-4 shrink-0" />
-            <span>Eligibility updated using your latest profile! Matches refreshed on Dashboard and Explore.</span>
+            {toast.type === 'success' ? (
+              <CheckCircle2 className="w-4 h-4 shrink-0" />
+            ) : (
+              <AlertTriangle className="w-4 h-4 shrink-0" />
+            )}
+            <span>{toast.message}</span>
           </div>
-          <button type="button" onClick={() => setShowNotification(false)} className="text-green hover:opacity-80">
+          <button
+            type="button"
+            onClick={() => setToast((prev) => ({ ...prev, show: false }))}
+            className="hover:opacity-80 p-1"
+            aria-label="Dismiss message"
+          >
             <X className="w-3.5 h-3.5" />
           </button>
         </div>
       )}
 
-      {/* Profile Completeness Snapshot Header */}
+      {/* Profile Completeness & Audit Snapshot Header */}
       <Card variant="default">
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
           <div className="space-y-1">
@@ -109,17 +187,43 @@ export const ProfilePage: React.FC = () => {
             </div>
             <p className="text-xs text-muted leading-relaxed max-w-xl">
               {completionStats.isComplete
-                ? 'Your Eligibility DNA profile is complete and actively powering deterministic scheme matching.'
+                ? 'Your Eligibility DNA profile is complete and actively powering deterministic scheme matching across the platform.'
                 : `Complete your profile to unlock more accurate scholarship matches. Missing: ${completionStats.missingFields.join(', ')}.`}
             </p>
+            <div className="flex items-center gap-3 pt-1 text-[11px] text-muted">
+              <span className="flex items-center gap-1">
+                <Clock className="w-3 h-3" /> Profile updated: {formattedLastUpdated}
+              </span>
+              <span>·</span>
+              <span>Rules evaluated: {new Date(lastEvaluatedAt).toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' })}</span>
+            </div>
           </div>
           <div className="w-full sm:w-48 bg-line h-2.5 rounded-full overflow-hidden shrink-0">
             <div
               className="bg-ink h-full rounded-full transition-all duration-300"
               style={{ width: `${completionStats.percentage}%` }}
+              role="progressbar"
+              aria-valuenow={completionStats.percentage}
+              aria-valuemin={0}
+              aria-valuemax={100}
             />
           </div>
         </div>
+
+        {/* Verification Alert Banner if items need verification */}
+        {verificationNeeds.length > 0 && (
+          <div className="mt-4 pt-3.5 border-t border-line/70 space-y-2">
+            <div className="flex items-center gap-1.5 text-xs font-bold text-ink">
+              <HelpCircle className="w-3.5 h-3.5 text-gold-hover shrink-0" />
+              <span>Information Needing Verification ({verificationNeeds.length})</span>
+            </div>
+            <ul className="text-xs text-muted space-y-1 pl-5 list-disc">
+              {verificationNeeds.map((need, idx) => (
+                <li key={idx}>{need}</li>
+              ))}
+            </ul>
+          </div>
+        )}
       </Card>
 
       {/* Grid of Editable Profile Sections */}
@@ -155,7 +259,7 @@ export const ProfilePage: React.FC = () => {
                 <Input
                   label="Date of Birth"
                   type="date"
-                  value={tempProfile.dob}
+                  value={tempProfile.dob || tempProfile.dateOfBirth || ''}
                   onChange={(e) => setTempProfile({ ...tempProfile, dob: e.target.value, dateOfBirth: e.target.value })}
                 />
                 <Select
@@ -163,7 +267,7 @@ export const ProfilePage: React.FC = () => {
                   options={[
                     { value: 'MALE', label: 'Male' },
                     { value: 'FEMALE', label: 'Female' },
-                    { value: 'OTHER', label: 'Other' },
+                    { value: 'OTHER', label: 'Other / Transgender' },
                     { value: 'PREFER_NOT_TO_SAY', label: 'Prefer not to say' },
                   ]}
                   value={tempProfile.gender}
@@ -181,13 +285,13 @@ export const ProfilePage: React.FC = () => {
                 />
                 <div className="flex justify-end gap-2 pt-2">
                   <Button size="sm" variant="outline" onClick={cancelEditing}>Cancel</Button>
-                  <Button size="sm" variant="primary" onClick={saveSection} leftIcon={<Save className="w-3.5 h-3.5" />}>Save & Recalculate</Button>
+                  <Button size="sm" variant="primary" onClick={saveSection} leftIcon={<Save className="w-3.5 h-3.5" />}>Save Section</Button>
                 </div>
               </div>
             ) : (
               <div className="space-y-2">
-                <div className="flex justify-between"><span className="text-muted">Full Name:</span><span className="font-semibold text-ink">{profile.fullName}</span></div>
-                <div className="flex justify-between"><span className="text-muted">Date of Birth:</span><span className="font-semibold text-ink">{profile.dob}</span></div>
+                <div className="flex justify-between"><span className="text-muted">Full Name:</span><span className="font-semibold text-ink">{profile.fullName || '—'}</span></div>
+                <div className="flex justify-between"><span className="text-muted">Date of Birth:</span><span className="font-semibold text-ink">{profile.dob || profile.dateOfBirth || '—'}</span></div>
                 <div className="flex justify-between"><span className="text-muted">Gender:</span><span className="font-semibold text-ink">{profile.gender}</span></div>
                 {profile.email && <div className="flex justify-between"><span className="text-muted">Email:</span><span className="font-semibold text-ink">{profile.email}</span></div>}
                 {profile.phoneNumber && <div className="flex justify-between"><span className="text-muted">Phone:</span><span className="font-semibold text-ink">{profile.phoneNumber}</span></div>}
@@ -233,20 +337,22 @@ export const ProfilePage: React.FC = () => {
                   onChange={(e) => setTempProfile({ ...tempProfile, educationLevel: e.target.value as EducationLevel })}
                 />
                 <Input
-                  label="College Name"
+                  label="College / Institution Name"
                   value={tempProfile.collegeName}
                   onChange={(e) => setTempProfile({ ...tempProfile, collegeName: e.target.value })}
                 />
-                <Input
-                  label="Degree Name"
-                  value={tempProfile.degreeName}
-                  onChange={(e) => setTempProfile({ ...tempProfile, degreeName: e.target.value })}
-                />
-                <Input
-                  label="Course / Branch"
-                  value={tempProfile.courseName}
-                  onChange={(e) => setTempProfile({ ...tempProfile, courseName: e.target.value })}
-                />
+                <div className="grid grid-cols-2 gap-2">
+                  <Input
+                    label="Degree Name"
+                    value={tempProfile.degreeName}
+                    onChange={(e) => setTempProfile({ ...tempProfile, degreeName: e.target.value })}
+                  />
+                  <Input
+                    label="Course / Branch"
+                    value={tempProfile.courseName}
+                    onChange={(e) => setTempProfile({ ...tempProfile, courseName: e.target.value, branch: e.target.value })}
+                  />
+                </div>
                 <div className="grid grid-cols-2 gap-2">
                   <Input
                     label="Year of Study"
@@ -255,7 +361,7 @@ export const ProfilePage: React.FC = () => {
                     onChange={(e) => setTempProfile({ ...tempProfile, yearOfStudy: parseInt(e.target.value, 10) || 1 })}
                   />
                   <Input
-                    label="Academic Score (%)"
+                    label="Academic Score (% or CGPA)"
                     type="number"
                     step="0.1"
                     value={tempProfile.percentageOrCgpa}
@@ -264,14 +370,14 @@ export const ProfilePage: React.FC = () => {
                 </div>
                 <div className="flex justify-end gap-2 pt-2">
                   <Button size="sm" variant="outline" onClick={cancelEditing}>Cancel</Button>
-                  <Button size="sm" variant="primary" onClick={saveSection} leftIcon={<Save className="w-3.5 h-3.5" />}>Save & Recalculate</Button>
+                  <Button size="sm" variant="primary" onClick={saveSection} leftIcon={<Save className="w-3.5 h-3.5" />}>Save Section</Button>
                 </div>
               </div>
             ) : (
               <div className="space-y-2">
-                <div className="flex justify-between"><span className="text-muted">Level / Degree:</span><span className="font-semibold text-ink">{profile.educationLevel} · {profile.degreeName}</span></div>
-                <div className="flex justify-between"><span className="text-muted">Course / Branch:</span><span className="font-semibold text-ink truncate max-w-[200px]">{profile.courseName}</span></div>
-                <div className="flex justify-between"><span className="text-muted">Institution:</span><span className="font-semibold text-ink truncate max-w-[200px]">{profile.collegeName}</span></div>
+                <div className="flex justify-between"><span className="text-muted">Level / Degree:</span><span className="font-semibold text-ink">{profile.educationLevel} · {profile.degreeName || '—'}</span></div>
+                <div className="flex justify-between"><span className="text-muted">Course / Branch:</span><span className="font-semibold text-ink truncate max-w-[200px]">{profile.courseName || '—'}</span></div>
+                <div className="flex justify-between"><span className="text-muted">Institution:</span><span className="font-semibold text-ink truncate max-w-[200px]">{profile.collegeName || '—'}</span></div>
                 <div className="flex justify-between"><span className="text-muted">Year of Study:</span><span className="font-semibold text-ink">{profile.yearOfStudy} Year</span></div>
                 <div className="flex justify-between"><span className="text-muted">Marks / Percentile:</span><span className="font-semibold text-ink">{profile.percentageOrCgpa}%</span></div>
               </div>
@@ -308,24 +414,32 @@ export const ProfilePage: React.FC = () => {
                   value={tempProfile.annualFamilyIncome}
                   onChange={(e) => setTempProfile({ ...tempProfile, annualFamilyIncome: parseInt(e.target.value, 10) || 0 })}
                 />
-                <label className="flex items-center gap-2 text-xs font-semibold text-ink cursor-pointer pt-1">
+                <label className="flex items-center gap-2 text-xs font-semibold text-ink cursor-pointer pt-1 min-h-[44px]">
                   <input
                     type="checkbox"
                     checked={tempProfile.hasIncomeCertificate}
                     onChange={(e) => setTempProfile({ ...tempProfile, hasIncomeCertificate: e.target.checked })}
-                    className="rounded border-line text-ink"
+                    className="w-4 h-4 rounded border-line text-ink"
                   />
                   <span>Possess Valid Revenue Dept Income Certificate</span>
                 </label>
+                {tempProfile.hasIncomeCertificate && (
+                  <Input
+                    label="Certificate Validity"
+                    value={tempProfile.incomeCertificateValidity || ''}
+                    onChange={(e) => setTempProfile({ ...tempProfile, incomeCertificateValidity: e.target.value })}
+                  />
+                )}
                 <div className="flex justify-end gap-2 pt-2">
                   <Button size="sm" variant="outline" onClick={cancelEditing}>Cancel</Button>
-                  <Button size="sm" variant="primary" onClick={saveSection} leftIcon={<Save className="w-3.5 h-3.5" />}>Save & Recalculate</Button>
+                  <Button size="sm" variant="primary" onClick={saveSection} leftIcon={<Save className="w-3.5 h-3.5" />}>Save Section</Button>
                 </div>
               </div>
             ) : (
               <div className="space-y-2">
-                <div className="flex justify-between"><span className="text-muted">Annual Family Income:</span><span className="font-bold text-ink">₹{profile.annualFamilyIncome.toLocaleString('en-IN')}</span></div>
-                <div className="flex justify-between"><span className="text-muted">Income Certificate:</span><span className="font-semibold text-green">{profile.hasIncomeCertificate ? 'Yes (Verified RD)' : 'Missing / Unverified'}</span></div>
+                <div className="flex justify-between"><span className="text-muted">Annual Family Income:</span><span className="font-bold text-ink">₹{profile.annualFamilyIncome.toLocaleString('en-IN')}/yr</span></div>
+                <div className="flex justify-between"><span className="text-muted">Income Certificate:</span><span className={`font-semibold ${profile.hasIncomeCertificate ? 'text-green' : 'text-gold-hover'}`}>{profile.hasIncomeCertificate ? 'Recorded (RD Dept)' : 'Missing / Unverified'}</span></div>
+                {profile.incomeCertificateValidity && <div className="flex justify-between"><span className="text-muted">Validity:</span><span className="text-ink">{profile.incomeCertificateValidity}</span></div>}
                 {profile.incomeSource && <div className="flex justify-between"><span className="text-muted">Income Source:</span><span className="font-semibold text-ink">{profile.incomeSource}</span></div>}
               </div>
             )}
@@ -368,21 +482,22 @@ export const ProfilePage: React.FC = () => {
                 <Select
                   label="Area Type"
                   options={[
-                    { value: 'URBAN', label: 'Urban' },
-                    { value: 'RURAL', label: 'Rural' },
+                    { value: 'URBAN', label: 'Urban (City / Municipal Corp)' },
+                    { value: 'RURAL', label: 'Rural (Panchayat / Village)' },
                   ]}
                   value={tempProfile.urbanRural}
                   onChange={(e) => setTempProfile({ ...tempProfile, urbanRural: e.target.value as 'URBAN' | 'RURAL' })}
                 />
                 <div className="flex justify-end gap-2 pt-2">
                   <Button size="sm" variant="outline" onClick={cancelEditing}>Cancel</Button>
-                  <Button size="sm" variant="primary" onClick={saveSection} leftIcon={<Save className="w-3.5 h-3.5" />}>Save & Recalculate</Button>
+                  <Button size="sm" variant="primary" onClick={saveSection} leftIcon={<Save className="w-3.5 h-3.5" />}>Save Section</Button>
                 </div>
               </div>
             ) : (
               <div className="space-y-2">
-                <div className="flex justify-between"><span className="text-muted">State Domicile:</span><span className="font-semibold text-ink">{profile.domicileState}</span></div>
-                <div className="flex justify-between"><span className="text-muted">District:</span><span className="font-semibold text-ink">{profile.currentDistrict} ({profile.urbanRural})</span></div>
+                <div className="flex justify-between"><span className="text-muted">Permanent State Domicile:</span><span className="font-semibold text-ink">{profile.domicileState}</span></div>
+                <div className="flex justify-between"><span className="text-muted">District:</span><span className="font-semibold text-ink">{profile.currentDistrict}</span></div>
+                <div className="flex justify-between"><span className="text-muted">Habitation Region:</span><span className="font-semibold text-ink">{profile.urbanRural}</span></div>
               </div>
             )}
           </CardContent>
@@ -414,47 +529,58 @@ export const ProfilePage: React.FC = () => {
                 <Select
                   label="Social Category"
                   options={[
-                    { value: 'GENERAL', label: 'General' },
-                    { value: 'OBC', label: 'OBC' },
-                    { value: 'SC', label: 'SC' },
-                    { value: 'ST', label: 'ST' },
-                    { value: 'EWS', label: 'EWS' },
+                    { value: 'GENERAL', label: 'General / Unreserved' },
+                    { value: 'OBC', label: 'OBC (Other Backward Classes)' },
+                    { value: 'SC', label: 'SC (Scheduled Caste)' },
+                    { value: 'ST', label: 'ST (Scheduled Tribe)' },
+                    { value: 'EWS', label: 'EWS (Economically Weaker Section)' },
                     { value: 'MINORITY', label: 'Minority' },
+                    { value: 'OTHER', label: 'Other' },
                   ]}
                   value={tempProfile.socialCategory}
                   onChange={(e) => setTempProfile({ ...tempProfile, socialCategory: e.target.value as SocialCategory })}
                 />
                 <Input
-                  label="Sub-Category"
+                  label="Sub-Category / Caste Name"
                   value={tempProfile.subCategory || ''}
                   onChange={(e) => setTempProfile({ ...tempProfile, subCategory: e.target.value })}
                 />
-                <label className="flex items-center gap-2 text-xs font-semibold text-ink cursor-pointer">
+                <label className="flex items-center gap-2 text-xs font-semibold text-ink cursor-pointer min-h-[44px]">
+                  <input
+                    type="checkbox"
+                    checked={tempProfile.casteCertificateAvailable}
+                    onChange={(e) => setTempProfile({ ...tempProfile, casteCertificateAvailable: e.target.checked })}
+                    className="w-4 h-4 rounded border-line text-ink"
+                  />
+                  <span>Valid RD Caste Certificate Available</span>
+                </label>
+                <label className="flex items-center gap-2 text-xs font-semibold text-ink cursor-pointer min-h-[44px]">
                   <input
                     type="checkbox"
                     checked={tempProfile.isMinority}
                     onChange={(e) => setTempProfile({ ...tempProfile, isMinority: e.target.checked })}
-                    className="rounded border-line text-ink"
+                    className="w-4 h-4 rounded border-line text-ink"
                   />
                   <span>Religious Minority</span>
                 </label>
-                <label className="flex items-center gap-2 text-xs font-semibold text-ink cursor-pointer">
+                <label className="flex items-center gap-2 text-xs font-semibold text-ink cursor-pointer min-h-[44px]">
                   <input
                     type="checkbox"
                     checked={tempProfile.isPersonWithDisability}
                     onChange={(e) => setTempProfile({ ...tempProfile, isPersonWithDisability: e.target.checked })}
-                    className="rounded border-line text-ink"
+                    className="w-4 h-4 rounded border-line text-ink"
                   />
                   <span>Person with Disability (PwD)</span>
                 </label>
                 <div className="flex justify-end gap-2 pt-2">
                   <Button size="sm" variant="outline" onClick={cancelEditing}>Cancel</Button>
-                  <Button size="sm" variant="primary" onClick={saveSection} leftIcon={<Save className="w-3.5 h-3.5" />}>Save & Recalculate</Button>
+                  <Button size="sm" variant="primary" onClick={saveSection} leftIcon={<Save className="w-3.5 h-3.5" />}>Save Section</Button>
                 </div>
               </div>
             ) : (
               <div className="space-y-2">
-                <div className="flex justify-between"><span className="text-muted">Category:</span><span className="font-semibold text-ink">{profile.socialCategory} ({profile.subCategory || 'General'})</span></div>
+                <div className="flex justify-between"><span className="text-muted">Category:</span><span className="font-semibold text-ink">{profile.socialCategory} {profile.subCategory ? `(${profile.subCategory})` : ''}</span></div>
+                <div className="flex justify-between"><span className="text-muted">Caste Certificate:</span><span className="font-semibold text-ink">{profile.casteCertificateAvailable ? 'Available' : 'Pending'}</span></div>
                 <div className="flex justify-between"><span className="text-muted">Minority Status:</span><span className="font-semibold text-ink">{profile.isMinority ? `Yes (${profile.minorityCommunity || 'Notified'})` : 'No'}</span></div>
                 <div className="flex justify-between"><span className="text-muted">Disability Status:</span><span className="font-semibold text-ink">{profile.isPersonWithDisability ? `${profile.disabilityPercentage || 40}% PwD` : 'No'}</span></div>
               </div>
@@ -462,13 +588,13 @@ export const ProfilePage: React.FC = () => {
           </CardContent>
         </Card>
 
-        {/* Section 6: Special Household Circumstances */}
+        {/* Section 6: Special Circumstances */}
         <Card>
           <CardHeader>
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <Heart className="w-4 h-4 text-ink shrink-0" />
-                <CardTitle className="text-base">Special Conditions</CardTitle>
+                <CardTitle className="text-base">Special Circumstances</CardTitle>
               </div>
               <button
                 type="button"
@@ -481,46 +607,55 @@ export const ProfilePage: React.FC = () => {
           </CardHeader>
           <CardContent className="text-xs space-y-3">
             {editingSection === 'special' ? (
-              <div className="space-y-2 pt-1">
-                <label className="flex items-center gap-2 text-xs font-semibold text-ink cursor-pointer">
+              <div className="space-y-2.5 pt-1">
+                <label className="flex items-center gap-2 text-xs font-semibold text-ink cursor-pointer min-h-[44px]">
                   <input
                     type="checkbox"
                     checked={tempProfile.isFirstGenerationLearner}
                     onChange={(e) => setTempProfile({ ...tempProfile, isFirstGenerationLearner: e.target.checked })}
-                    className="rounded border-line text-ink"
+                    className="w-4 h-4 rounded border-line text-ink"
                   />
-                  <span>First-Generation Learner</span>
+                  <span>First-Generation Higher Education Learner</span>
                 </label>
-                <label className="flex items-center gap-2 text-xs font-semibold text-ink cursor-pointer">
+                <label className="flex items-center gap-2 text-xs font-semibold text-ink cursor-pointer min-h-[44px]">
                   <input
                     type="checkbox"
                     checked={tempProfile.isSingleParentChild}
                     onChange={(e) => setTempProfile({ ...tempProfile, isSingleParentChild: e.target.checked })}
-                    className="rounded border-line text-ink"
+                    className="w-4 h-4 rounded border-line text-ink"
                   />
                   <span>Single Parent Household</span>
                 </label>
-                <label className="flex items-center gap-2 text-xs font-semibold text-ink cursor-pointer">
+                <label className="flex items-center gap-2 text-xs font-semibold text-ink cursor-pointer min-h-[44px]">
                   <input
                     type="checkbox"
                     checked={tempProfile.isOrphan}
                     onChange={(e) => setTempProfile({ ...tempProfile, isOrphan: e.target.checked })}
-                    className="rounded border-line text-ink"
+                    className="w-4 h-4 rounded border-line text-ink"
                   />
-                  <span>Orphan / Ward of State</span>
+                  <span>Orphan / Ward of Government</span>
                 </label>
-                <label className="flex items-center gap-2 text-xs font-semibold text-ink cursor-pointer">
+                <label className="flex items-center gap-2 text-xs font-semibold text-ink cursor-pointer min-h-[44px]">
+                  <input
+                    type="checkbox"
+                    checked={tempProfile.isDefenceBackground}
+                    onChange={(e) => setTempProfile({ ...tempProfile, isDefenceBackground: e.target.checked })}
+                    className="w-4 h-4 rounded border-line text-ink"
+                  />
+                  <span>Defence / Paramilitary Background</span>
+                </label>
+                <label className="flex items-center gap-2 text-xs font-semibold text-ink cursor-pointer min-h-[44px]">
                   <input
                     type="checkbox"
                     checked={tempProfile.isHosteller}
                     onChange={(e) => setTempProfile({ ...tempProfile, isHosteller: e.target.checked })}
-                    className="rounded border-line text-ink"
+                    className="w-4 h-4 rounded border-line text-ink"
                   />
-                  <span>Hostel Resident</span>
+                  <span>College Hostel / Approved PG Resident</span>
                 </label>
                 <div className="flex justify-end gap-2 pt-2">
                   <Button size="sm" variant="outline" onClick={cancelEditing}>Cancel</Button>
-                  <Button size="sm" variant="primary" onClick={saveSection} leftIcon={<Save className="w-3.5 h-3.5" />}>Save & Recalculate</Button>
+                  <Button size="sm" variant="primary" onClick={saveSection} leftIcon={<Save className="w-3.5 h-3.5" />}>Save Section</Button>
                 </div>
               </div>
             ) : (
@@ -528,7 +663,8 @@ export const ProfilePage: React.FC = () => {
                 <div className="flex justify-between"><span className="text-muted">First-Gen Learner:</span><span className="font-semibold text-ink">{profile.isFirstGenerationLearner ? 'Yes' : 'No'}</span></div>
                 <div className="flex justify-between"><span className="text-muted">Single Parent:</span><span className="font-semibold text-ink">{profile.isSingleParentChild ? 'Yes' : 'No'}</span></div>
                 <div className="flex justify-between"><span className="text-muted">Orphan:</span><span className="font-semibold text-ink">{profile.isOrphan ? 'Yes' : 'No'}</span></div>
-                <div className="flex justify-between"><span className="text-muted">Hosteller:</span><span className="font-semibold text-ink">{profile.isHosteller ? 'Yes' : 'No'}</span></div>
+                <div className="flex justify-between"><span className="text-muted">Defence Background:</span><span className="font-semibold text-ink">{profile.isDefenceBackground ? 'Yes' : 'No'}</span></div>
+                <div className="flex justify-between"><span className="text-muted">Hostel Resident:</span><span className="font-semibold text-ink">{profile.isHosteller ? 'Yes' : 'No'}</span></div>
               </div>
             )}
           </CardContent>
@@ -545,7 +681,7 @@ export const ProfilePage: React.FC = () => {
               <div className="flex items-center gap-2">
                 {getSectionStatus(completionStats.sectionScores.documents)}
                 <Link to="/passport">
-                  <Button size="sm" variant="outline">Manage Metadata</Button>
+                  <Button size="sm" variant="outline">Manage Metadata in Passport →</Button>
                 </Link>
               </div>
             </div>
@@ -555,21 +691,30 @@ export const ProfilePage: React.FC = () => {
               <span className="text-muted">Metadata Records:</span>
               <span className="font-bold text-ink">{profile.documents?.length || 0} Certificates Registered</span>
             </div>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-              {(profile.documents || []).map((doc) => (
-                <div key={doc.id} className="p-2.5 bg-paper-surface border border-line rounded flex items-center justify-between">
-                  <div>
-                    <p className="font-bold text-ink">{doc.documentName}</p>
-                    <p className="text-[10px] text-muted">{doc.issuer}</p>
+            {profile.documents && profile.documents.length > 0 ? (
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                {profile.documents.map((doc) => (
+                  <div key={doc.id} className="p-3 bg-paper-surface border border-line rounded flex items-center justify-between gap-2">
+                    <div className="space-y-0.5">
+                      <p className="font-bold text-ink">{doc.documentName}</p>
+                      <p className="text-[10px] text-muted">Issuer: {doc.issuer}</p>
+                      <p className="text-[10px] font-mono text-ink">Ref: {doc.referenceNumber || 'Pending Reference'}</p>
+                    </div>
+                    <StatusBadge
+                      status={doc.verificationStatus === 'VERIFIED' ? 'READY' : doc.verificationStatus === 'NEEDS_VERIFICATION' ? 'VERIFY' : 'MISSING'}
+                      size="sm"
+                    />
                   </div>
-                  <StatusBadge status={doc.verificationStatus === 'VERIFIED' ? 'READY' : 'VERIFY'} size="sm" />
-                </div>
-              ))}
-            </div>
+                ))}
+              </div>
+            ) : (
+              <div className="p-4 bg-paper-muted border border-line rounded text-center text-muted">
+                No certificate metadata recorded yet. Click &apos;Manage Metadata in Passport&apos; to register certificate reference numbers.
+              </div>
+            )}
           </CardContent>
         </Card>
       </div>
     </div>
   );
 };
-

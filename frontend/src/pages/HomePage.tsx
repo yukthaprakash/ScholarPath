@@ -1,13 +1,14 @@
 import React from 'react';
 import { useProfile } from '../contexts/ProfileContext';
 import { schemeService } from '../services/schemeService';
+import { MANDATORY_ELIGIBILITY_DISCLAIMER } from '../types/eligibility';
 import { PageHeader } from '../components/layout/PageHeader';
 import { Card } from '../components/common/Card';
 import { StatusBadge } from '../components/common/StatusBadge';
 import { Button } from '../components/common/Button';
 import { TrustBadge } from '../components/common/TrustBadge';
 import { Link } from 'react-router-dom';
-import { ArrowRight, Sparkles, CheckCircle2, AlertCircle, HelpCircle, FileText } from 'lucide-react';
+import { ArrowRight, Sparkles, CheckCircle2, AlertCircle, HelpCircle, FileText, ShieldCheck } from 'lucide-react';
 
 export const HomePage: React.FC = () => {
   const { profile, completionStats, matches, unlocks } = useProfile();
@@ -16,11 +17,15 @@ export const HomePage: React.FC = () => {
   const nearlyMatches = matches.filter((m) => m.status === 'NEARLY_ELIGIBLE');
   const verifyMatches = matches.filter((m) => m.status === 'NEEDS_VERIFICATION');
 
+  const displayName = profile.fullName ? profile.fullName.split(' ')[0] : 'Student';
+  const displayDegree = profile.degreeName ? `${profile.degreeName} (${profile.courseName || 'Enrolled'})` : 'Student Degree';
+  const displayState = profile.domicileState || 'Domicile State';
+
   return (
     <div className="space-y-8">
       <PageHeader
-        title={`Welcome back, ${profile.fullName.split(' ')[0]}`}
-        subtitle={`Current Profile: ${profile.degreeName} (${profile.courseName}), ${profile.domicileState}, Income: ₹${profile.annualFamilyIncome.toLocaleString('en-IN')}/yr.`}
+        title={`Welcome back, ${displayName}`}
+        subtitle={`Current Profile: ${displayDegree}, ${displayState}, Family Income: ₹${profile.annualFamilyIncome.toLocaleString('en-IN')}/yr.`}
         action={
           <div className="flex items-center gap-2">
             <Link to="/wizard">
@@ -31,6 +36,12 @@ export const HomePage: React.FC = () => {
           </div>
         }
       />
+
+      {/* Regulatory Notice Banner */}
+      <div className="p-3 bg-paper-surface border border-line rounded-lg text-xs text-muted flex items-center gap-2 shadow-subtle">
+        <ShieldCheck className="w-4 h-4 text-green shrink-0" aria-hidden="true" />
+        <span>{MANDATORY_ELIGIBILITY_DISCLAIMER}</span>
+      </div>
 
       {/* Snapshot Cards Summary */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
