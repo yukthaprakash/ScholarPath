@@ -1,5 +1,6 @@
 import { query, checkDatabaseHealth } from '../db';
 import { UpdateProfileInput } from '../schemas/profileSchema';
+import { upsertUser } from './userService';
 
 export interface ProfileRecord {
   id?: string;
@@ -81,6 +82,10 @@ export async function upsertProfile(userId: string, input: UpdateProfileInput): 
     inMemoryProfiles.set(userId, updated);
     return updated;
   }
+
+  // Ensure parent user record exists in users table to satisfy foreign key constraint:
+  // profiles.user_id REFERENCES users(id) ON DELETE CASCADE
+  await upsertUser(userId);
 
   const sql = `
     INSERT INTO profiles (

@@ -2,6 +2,8 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import request from 'supertest';
 import { createApp } from '../src/app';
 import * as envModule from '../src/config/env';
+import * as dbModule from '../src/db';
+import * as userServiceModule from '../src/services/userService';
 
 describe('Document Metadata Endpoints (/documents)', () => {
   beforeEach(() => {
@@ -119,5 +121,54 @@ describe('Document Metadata Endpoints (/documents)', () => {
 
     expect(response.status).toBe(404);
     expect(response.body.error.code).toBe('NOT_FOUND');
+  });
+
+  it('ensures user record is upserted to satisfy foreign key constraint when database is healthy', async () => {
+    vi.spyOn(envModule, 'env', 'get').mockReturnValue({
+      ...envModule.env,
+      AUTH_MODE: 'demo'
+    });
+    vi.spyOn(dbModule, 'checkDatabaseHealth').mockResolvedValue(true);
+
+    const upsertUserSpy = vi.spyOn(userServiceModule, 'upsertUser').mockResolvedValue({
+      id: 'user-doc-fk-test',
+      authMode: 'demo',
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString()
+    });
+
+    const mockDocRow = {
+      id: 'doc-uuid-123',
+      userId: 'user-doc-fk-test',
+      type: 'income_certificate',
+      issuer: 'Tahsildar Office',
+      issuedOn: '2026-01-10',
+      validUntil: null,
+      notes: null,
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString()
+    };
+
+    vi.spyOn(dbModule, 'query').mockResolvedValue({
+      rows: [mockDocRow],
+      rowCount: 1,
+      command: 'INSERT',
+      oid: 0,
+      fields: []
+    });
+
+    const app = createApp();
+    const response = await request(app)
+      .post('/documents')
+      .set('x-demo-user-id', 'user-doc-fk-test')
+      .send({
+        type: 'income_certificate',
+        issuer: 'Tahsildar Office',
+        issuedOn: '2026-01-10'
+      });
+
+    expect(response.status).toBe(201);
+    expect(upsertUserSpy).toHaveBeenCalledWith('user-doc-fk-test');
+    expect(response.body.document.userId).toBe('user-doc-fk-test');
   });
 });

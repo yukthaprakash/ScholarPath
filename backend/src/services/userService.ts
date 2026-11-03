@@ -11,7 +11,7 @@ export interface UserRecord {
 // In-memory fallback for test environment when Postgres is not running
 const inMemoryUsers = new Map<string, UserRecord>();
 
-export async function upsertUser(id: string, email?: string, authMode = 'demo'): Promise<UserRecord> {
+export async function upsertUser(id: string, email?: string, authMode?: string): Promise<UserRecord> {
   const isDbHealthy = await checkDatabaseHealth();
 
   if (!isDbHealthy) {
@@ -20,7 +20,7 @@ export async function upsertUser(id: string, email?: string, authMode = 'demo'):
     const record: UserRecord = {
       id,
       email: email ?? existing?.email,
-      authMode,
+      authMode: authMode ?? existing?.authMode ?? 'demo',
       createdAt: existing?.createdAt ?? now,
       updatedAt: now
     };
@@ -30,13 +30,15 @@ export async function upsertUser(id: string, email?: string, authMode = 'demo'):
 
   const sql = `
     INSERT INTO users (id, email, auth_mode, updated_at)
-    VALUES ($1, $2, $3, NOW())
+    VALUES ($1, $2, COALESCE($3, 'demo'), NOW())
     ON CONFLICT (id) DO UPDATE
-    SET email = EXCLUDED.email, auth_mode = EXCLUDED.auth_mode, updated_at = NOW()
+    SET email = COALESCE(EXCLUDED.email, users.email),
+        auth_mode = COALESCE($3, users.auth_mode),
+        updated_at = NOW()
     RETURNING id, email, auth_mode AS "authMode", created_at AS "createdAt", updated_at AS "updatedAt"
   `;
 
-  const res = await query<UserRecord>(sql, [id, email ?? null, authMode]);
+  const res = await query<UserRecord>(sql, [id, email ?? null, authMode ?? null]);
   if (!res.rows[0]) {
     throw new Error('Failed to create or update user record in database');
   }

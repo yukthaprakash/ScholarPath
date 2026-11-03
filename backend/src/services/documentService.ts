@@ -1,6 +1,7 @@
 import { query, checkDatabaseHealth } from '../db';
 import { CreateDocumentInput } from '../schemas/documentSchema';
 import { NotFoundError, AuthorizationError } from '../errors/AppError';
+import { upsertUser } from './userService';
 
 export interface DocumentRecord {
   id: string;
@@ -63,6 +64,10 @@ export async function createDocument(userId: string, input: CreateDocumentInput)
     inMemoryDocuments.set(id, doc);
     return doc;
   }
+
+  // Ensure parent user record exists in users table to satisfy foreign key constraint:
+  // documents.user_id REFERENCES users(id) ON DELETE CASCADE
+  await upsertUser(userId);
 
   const sql = `
     INSERT INTO documents (user_id, type, issuer, issued_on, valid_until, notes)

@@ -2,6 +2,8 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import request from 'supertest';
 import { createApp } from '../src/app';
 import * as envModule from '../src/config/env';
+import * as dbModule from '../src/db';
+import * as userServiceModule from '../src/services/userService';
 
 describe('Profile Endpoints (GET /profile, PUT /profile)', () => {
   beforeEach(() => {
@@ -104,5 +106,59 @@ describe('Profile Endpoints (GET /profile, PUT /profile)', () => {
 
     expect(response.status).toBe(400);
     expect(response.body.error.code).toBe('VALIDATION_ERROR');
+  });
+
+  it('ensures user record is upserted to satisfy foreign key constraint when database is healthy', async () => {
+    vi.spyOn(envModule, 'env', 'get').mockReturnValue({
+      ...envModule.env,
+      AUTH_MODE: 'demo'
+    });
+    vi.spyOn(dbModule, 'checkDatabaseHealth').mockResolvedValue(true);
+
+    const upsertUserSpy = vi.spyOn(userServiceModule, 'upsertUser').mockResolvedValue({
+      id: 'demo-student-fk-test',
+      authMode: 'demo',
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString()
+    });
+
+    const mockProfileRow = {
+      id: 'test-uuid-123',
+      userId: 'demo-student-fk-test',
+      fullName: 'Sunita Sharma',
+      gender: 'female',
+      category: 'GENERAL',
+      domicileState: 'KARNATAKA',
+      annualFamilyIncome: 200000,
+      educationLevel: 'undergraduate',
+      currentCourse: 'BSc Computer Science',
+      courseYear: 1,
+      academicPercentage: 88,
+      instituteState: 'KARNATAKA',
+      isSingleGirlChild: true,
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString()
+    };
+
+    vi.spyOn(dbModule, 'query').mockResolvedValue({
+      rows: [mockProfileRow],
+      rowCount: 1,
+      command: 'INSERT',
+      oid: 0,
+      fields: []
+    });
+
+    const app = createApp();
+    const response = await request(app)
+      .put('/profile')
+      .set('x-demo-user-id', 'demo-student-fk-test')
+      .send({
+        fullName: 'Sunita Sharma',
+        gender: 'female'
+      });
+
+    expect(response.status).toBe(200);
+    expect(upsertUserSpy).toHaveBeenCalledWith('demo-student-fk-test');
+    expect(response.body.profile.fullName).toBe('Sunita Sharma');
   });
 });
