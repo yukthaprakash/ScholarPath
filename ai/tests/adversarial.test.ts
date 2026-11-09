@@ -81,4 +81,13 @@ describe('AI Layer Adversarial & Safety Unit Tests', () => {
     expect(fallbackText).toContain('Nearly Eligible');
     expect(fallbackText).toContain('Valid Income Certificate Available');
   });
+
+  it('7. explainMatchWithAI falls back safely when no API key is provided and flags machine translation', async () => {
+    const { explainMatchWithAI } = await import('../src/geminiClient.js');
+    const res = await explainMatchWithAI({}, mockMatch, { apiKey: '', language: 'kn' });
+    expect(res.isFallback).toBe(true);
+    expect(res.language).toBe('kn');
+    expect(res.machine).toBe(true);
+    expect(res.text).toContain('Central Sector Scheme of Scholarships');
+  });
 });

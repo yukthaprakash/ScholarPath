@@ -1,6 +1,6 @@
 import { buildSystemPrompt, buildUserContext } from './promptBuilder.js';
 import { checkAnswerGuard } from './answerGuard.js';
-import { getDeterministicFallback } from './fallback.ts';
+import { getDeterministicFallback } from './fallback.js';
 import { SchemeMatch, StudentProfile } from '../engine/src/types.js';
 
 export interface ExplainMatchOptions {
@@ -9,11 +9,19 @@ export interface ExplainMatchOptions {
   timeoutMs?: number;
 }
 
+export interface AIExplanationResult {
+  text: string;
+  isFallback: boolean;
+  reason?: string;
+  language: 'en' | 'kn' | 'hi';
+  machine?: boolean;
+}
+
 export async function explainMatchWithAI(
   profile: Partial<StudentProfile>,
   match: SchemeMatch,
   options: ExplainMatchOptions = {}
-): Promise<{ text: string; isFallback: boolean; reason?: string }> {
+): Promise<AIExplanationResult> {
   const timeoutMs = options.timeoutMs || 8000;
   const language = options.language || 'en';
   const apiKey = options.apiKey || process.env.GEMINI_API_KEY;
@@ -23,6 +31,8 @@ export async function explainMatchWithAI(
       text: getDeterministicFallback(match),
       isFallback: true,
       reason: 'GEMINI_API_KEY not configured; safely using deterministic fallback.',
+      language,
+      machine: language !== 'en',
     };
   }
 
@@ -59,6 +69,8 @@ export async function explainMatchWithAI(
         text: getDeterministicFallback(match),
         isFallback: true,
         reason: `Gemini API HTTP Error ${response.status}`,
+        language,
+        machine: language !== 'en',
       };
     }
 
@@ -70,6 +82,8 @@ export async function explainMatchWithAI(
         text: getDeterministicFallback(match),
         isFallback: true,
         reason: 'Empty output from Gemini API.',
+        language,
+        machine: language !== 'en',
       };
     }
 
@@ -80,12 +94,16 @@ export async function explainMatchWithAI(
         text: getDeterministicFallback(match),
         isFallback: true,
         reason: `Answer Guard Rejection: ${guardCheck.reason}`,
+        language,
+        machine: language !== 'en',
       };
     }
 
     return {
       text: generatedText.trim(),
       isFallback: false,
+      language,
+      machine: language !== 'en',
     };
   } catch (err: any) {
     clearTimeout(timeoutId);
@@ -93,6 +111,8 @@ export async function explainMatchWithAI(
       text: getDeterministicFallback(match),
       isFallback: true,
       reason: err.name === 'AbortError' ? 'AI request timed out after 8 seconds.' : err.message,
+      language,
+      machine: language !== 'en',
     };
   }
 }
