@@ -1,0 +1,35 @@
+{
+  "certificateType": "AADHAAR_CARD",
+  "title": "How to Verify and Seed Bank Account with Aadhaar DBT (Direct Benefit Transfer)",
+  "issuingAuthority": "Authorized Bank Branch & National Payments Corporation of India (NPCI) / UIDAI",
+  "estimatedProcurementDays": 7,
+  "requiredDocuments": [
+    "Bank Passbook copy showing active Savings Account (in student's name, not minor/joint unless permitted)",
+    "Aadhaar Card copy (with mobile linked for OTP)",
+    "NPCI Aadhaar Mandate & Consent Form (duly signed)"
+  ],
+  "steps": [
+    {
+      "stepNumber": 1,
+      "title": "Check Current NPCI DBT Seeding Status",
+      "description": "Log into resident.uidai.gov.in/bank-mapper or use myAadhaar portal to check 'Bank Seeding Status'. If inactive or unlinked, proceed to step 2."
+    },
+    {
+      "stepNumber": 2,
+      "title": "Submit Mandate Form at Bank",
+      "description": "Visit your bank home branch and submit the official NPCI DBT Consent Form requesting Aadhaar mapper linkage."
+    },
+    {
+      "stepNumber": 3,
+      "title": "Bank Official Verification & Confirmation",
+      "description": "Bank clerk updates core banking system (CBS) and pushes account details to NPCI mapper. Obtain stamped acknowledgement receipt."
+    }
+  ],
+  "validityPeriod": "Continuous while bank account remains active and KYC updated.",
+  "sourceRef": {
+    "portal": "Direct Benefit Transfer (DBT) Bharat Portal, Govt. of India",
+    "url": "https://dbtbharat.gov.in",
+    "tier": 1,
+    "verifiedDate": "2026-10-05"
+  }
+}

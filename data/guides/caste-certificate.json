@@ -1,0 +1,36 @@
+{
+  "certificateType": "CASTE_CERTIFICATE",
+  "title": "How to Obtain Caste & Category Certificate (SC/ST/OBC/Cat-1)",
+  "issuingAuthority": "Tahsildar / Revenue Department / Nadakacheri / Seva Sindhu",
+  "estimatedProcurementDays": 21,
+  "requiredDocuments": [
+    "Applicant Aadhaar Card and School Transfer Certificate (TC) showing caste",
+    "Father / Mother Caste Certificate or School Certificate showing community",
+    "Ration Card or Voter ID proving residence in Karnataka",
+    "Self-declaration / Affidavit on prescribed format"
+  ],
+  "steps": [
+    {
+      "stepNumber": 1,
+      "title": "Apply Online via Seva Sindhu / Nadakacheri",
+      "description": "Visit sevasindhuservices.karnataka.gov.in or Nadakacheri portal and select Caste Certificate (Form D for SC/ST, Form E/F for Category 1/2A/2B/3A/3B)."
+    },
+    {
+      "stepNumber": 2,
+      "title": "Revenue Inspector Inspection",
+      "description": "Village Accountant / Revenue Inspector verifies caste records with local genealogical records."
+    },
+    {
+      "stepNumber": 3,
+      "title": "Digital Certificate Issuance",
+      "description": "Tahsildar signs and generates digital RD certificate with barcode and RD number."
+    }
+  ],
+  "validityPeriod": "Life-time for SC/ST; 5 Years for OBC Category in Karnataka unless notified otherwise.",
+  "sourceRef": {
+    "portal": "Nadakacheri / Revenue Department Karnataka",
+    "url": "https://nadakacheri.karnataka.gov.in",
+    "tier": 1,
+    "verifiedDate": "2026-10-05"
+  }
+}

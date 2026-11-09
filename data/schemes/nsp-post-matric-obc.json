@@ -1,0 +1,78 @@
+{
+  "id": "nsp-post-matric-obc",
+  "title": "Post Matric Scholarship for Other Backward Classes Students (PMS-OBC)",
+  "shortDescription": "Centrally sponsored scheme providing financial support and maintenance allowances for OBC students studying at post-matric level.",
+  "offeringAuthority": "Ministry of Social Justice and Empowerment, Govt. of India",
+  "authorityType": "CENTRAL_GOVT",
+  "schemeType": "SCHOLARSHIP",
+  "benefitDetails": {
+    "financialAmountPerYear": 10000,
+    "description": "Tuition fee reimbursement plus annual maintenance allowance up to Rs 10,000 based on course group."
+  },
+  "applicationWindow": {
+    "startDate": "2026-07-01",
+    "endDate": "2026-10-31",
+    "academicYear": "2026-27"
+  },
+  "officialUrl": "https://scholarships.gov.in",
+  "applicationUrl": "https://scholarships.gov.in/ApplicationForm/",
+  "lastVerified": "2026-10-05",
+  "sourceCitation": {
+    "portalName": "National Scholarship Portal (NSP)",
+    "url": "https://scholarships.gov.in",
+    "tier": 1,
+    "clauseRef": "PMS-OBC Guidelines Section 4.1",
+    "verifiedDate": "2026-10-05",
+    "readOn": "2026-10-05"
+  },
+  "rules": [
+    {
+      "key": "personal.casteCategory",
+      "label": "Must belong to Other Backward Classes (OBC) category",
+      "operator": "EQUALS",
+      "expectedValue": "OBC",
+      "isActionable": false,
+      "isRequired": true,
+      "version": "1.0",
+      "clauseRef": "Clause 2.1"
+    },
+    {
+      "key": "financial.annualHouseholdIncome",
+      "label": "Total family annual income <= Rs 2,50,000",
+      "operator": "LESS_THAN_OR_EQUAL",
+      "expectedValue": 250000,
+      "isActionable": true,
+      "isRequired": true,
+      "version": "1.0",
+      "clauseRef": "Clause 4.1"
+    },
+    {
+      "key": "academic.educationLevel",
+      "label": "Enrolled in recognized Post-Matric course",
+      "operator": "IN_ARRAY",
+      "expectedValue": ["DIPLOMA", "UNDERGRADUATE", "POSTGRADUATE", "DOCTORAL"],
+      "isActionable": false,
+      "isRequired": true,
+      "version": "1.0",
+      "clauseRef": "Clause 3.1"
+    },
+    {
+      "key": "certificates.INCOME_CERTIFICATE",
+      "label": "Valid Competent Authority Income Certificate available",
+      "operator": "EQUALS",
+      "expectedValue": true,
+      "isActionable": true,
+      "isRequired": true,
+      "version": "1.0",
+      "clauseRef": "Clause 5.1"
+    }
+  ],
+  "requiredCertificates": ["CASTE_CERTIFICATE", "INCOME_CERTIFICATE", "MARKSHEET"],
+  "estimatedIssuanceDays": {
+    "CASTE_CERTIFICATE": 21,
+    "INCOME_CERTIFICATE": 14,
+    "MARKSHEET": 7
+  },
+  "isDemo": true,
+  "version": "1.0"
+}

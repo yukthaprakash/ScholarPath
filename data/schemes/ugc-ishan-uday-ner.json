@@ -1,0 +1,79 @@
+{
+  "id": "ugc-ishan-uday-ner",
+  "title": "UGC Ishan Uday Special Scholarship Scheme for North Eastern Region",
+  "shortDescription": "Special scholarship scheme of Rs 80,000/year for undergraduate students with domicile in the North Eastern Region pursuing general or professional degree courses.",
+  "offeringAuthority": "University Grants Commission (UGC), Ministry of Education",
+  "authorityType": "UGC",
+  "schemeType": "SCHOLARSHIP",
+  "benefitDetails": {
+    "financialAmountPerYear": 80000,
+    "description": "Rs 80,000 per annum (Rs 8,000 per month for 10 months) disbursed directly via DBT for the full duration of the undergraduate course."
+  },
+  "applicationWindow": {
+    "startDate": "2026-07-15",
+    "endDate": "2026-10-31",
+    "academicYear": "2026-27"
+  },
+  "officialUrl": "https://www.ugc.gov.in",
+  "applicationUrl": "https://scholarships.gov.in/ApplicationForm/",
+  "lastVerified": "2026-10-05",
+  "sourceCitation": {
+    "portalName": "UGC Official Portal / NSP",
+    "url": "https://www.ugc.gov.in",
+    "tier": 1,
+    "clauseRef": "Ishan Uday Operational Guidelines Section 2 & 3",
+    "verifiedDate": "2026-10-05",
+    "readOn": "2026-10-05"
+  },
+  "rules": [
+    {
+      "key": "demographics.domicileState",
+      "label": "Must have domicile in one of the North Eastern states (Assam, Arunachal, Manipur, Meghalaya, Mizoram, Nagaland, Sikkim, Tripura)",
+      "operator": "IN_ARRAY",
+      "expectedValue": ["ASSAM", "ARUNACHAL_PRADESH", "MANIPUR", "MEGHALAYA", "MIZORAM", "NAGALAND", "SIKKIM", "TRIPURA"],
+      "isActionable": false,
+      "isRequired": true,
+      "version": "1.0",
+      "clauseRef": "Clause 2.1"
+    },
+    {
+      "key": "academic.educationLevel",
+      "label": "Enrolled in 1st year Undergraduate regular full-time degree program",
+      "operator": "EQUALS",
+      "expectedValue": "UNDERGRADUATE",
+      "isActionable": false,
+      "isRequired": true,
+      "version": "1.0",
+      "clauseRef": "Clause 3.1"
+    },
+    {
+      "key": "financial.annualHouseholdIncome",
+      "label": "Annual parental income from all sources <= Rs 4,50,000",
+      "operator": "LESS_THAN_OR_EQUAL",
+      "expectedValue": 450000,
+      "isActionable": true,
+      "isRequired": true,
+      "version": "1.0",
+      "clauseRef": "Clause 4.1"
+    },
+    {
+      "key": "certificates.DOMICILE_CERTIFICATE",
+      "label": "Valid Permanent Residence / Domicile Certificate from competent NER authority available",
+      "operator": "EQUALS",
+      "expectedValue": true,
+      "isActionable": true,
+      "isRequired": true,
+      "version": "1.0",
+      "clauseRef": "Clause 5.1"
+    }
+  ],
+  "requiredCertificates": ["DOMICILE_CERTIFICATE", "INCOME_CERTIFICATE", "BONAFIDE_CERTIFICATE", "MARKSHEET"],
+  "estimatedIssuanceDays": {
+    "DOMICILE_CERTIFICATE": 21,
+    "INCOME_CERTIFICATE": 14,
+    "BONAFIDE_CERTIFICATE": 5,
+    "MARKSHEET": 7
+  },
+  "isDemo": true,
+  "version": "1.0"
+}

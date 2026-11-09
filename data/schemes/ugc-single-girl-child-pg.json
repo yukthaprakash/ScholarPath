@@ -15,6 +15,8 @@
     "academicYear": "2026-27"
   },
   "officialUrl": "https://www.ugc.gov.in",
+  "applicationUrl": "https://scholarships.gov.in/ApplicationForm/",
+  "lastVerified": "2026-10-05",
   "sourceCitation": {
     "portalName": "UGC Official Portal / NSP",
     "url": "https://www.ugc.gov.in",
@@ -52,6 +54,16 @@
       "isRequired": true,
       "version": "1.0",
       "clauseRef": "Clause 3.2"
+    },
+    {
+      "key": "certificates.BONAFIDE_CERTIFICATE",
+      "label": "Valid Institution Bonafide Certificate available",
+      "operator": "EQUALS",
+      "expectedValue": true,
+      "isActionable": true,
+      "isRequired": true,
+      "version": "1.0",
+      "clauseRef": "Clause 5.1"
     }
   ],
   "requiredCertificates": ["BONAFIDE_CERTIFICATE", "MARKSHEET"],

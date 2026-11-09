@@ -1,0 +1,88 @@
+{
+  "id": "nsp-nmmss",
+  "title": "National Means-cum-Merit Scholarship Scheme (NMMSS)",
+  "shortDescription": "Centrally sponsored scholarship for meritorious students from economically weaker sections studying in classes 9 to 12 in Government/Aided schools.",
+  "offeringAuthority": "Department of School Education and Literacy, Ministry of Education, Govt. of India",
+  "authorityType": "CENTRAL_GOVT",
+  "schemeType": "SCHOLARSHIP",
+  "benefitDetails": {
+    "financialAmountPerYear": 12000,
+    "description": "Rs 12,000 per annum (Rs 1,000 per month) for 4 years from Class 9 through Class 12 via DBT."
+  },
+  "applicationWindow": {
+    "startDate": "2026-07-01",
+    "endDate": "2026-10-31",
+    "academicYear": "2026-27"
+  },
+  "officialUrl": "https://scholarships.gov.in",
+  "applicationUrl": "https://scholarships.gov.in/ApplicationForm/",
+  "lastVerified": "2026-10-05",
+  "sourceCitation": {
+    "portalName": "National Scholarship Portal (NSP)",
+    "url": "https://scholarships.gov.in",
+    "tier": 1,
+    "clauseRef": "NMMSS Operational Guidelines Section 3 & 4",
+    "verifiedDate": "2026-10-05",
+    "readOn": "2026-10-05"
+  },
+  "rules": [
+    {
+      "key": "academic.educationLevel",
+      "label": "Enrolled in Class 9 or 10 in secondary school",
+      "operator": "IN_ARRAY",
+      "expectedValue": ["SCHOOL_CLASS_9_10", "SCHOOL_CLASS_11_12"],
+      "isActionable": false,
+      "isRequired": true,
+      "version": "1.0",
+      "clauseRef": "Clause 2.1"
+    },
+    {
+      "key": "academic.instituteType",
+      "label": "Studying in Government or Local Body / Aided school",
+      "operator": "IN_ARRAY",
+      "expectedValue": ["GOVERNMENT", "AIDED"],
+      "isActionable": false,
+      "isRequired": true,
+      "version": "1.0",
+      "clauseRef": "Clause 2.2"
+    },
+    {
+      "key": "financial.annualHouseholdIncome",
+      "label": "Annual parental income from all sources <= Rs 3,50,000",
+      "operator": "LESS_THAN_OR_EQUAL",
+      "expectedValue": 350000,
+      "isActionable": true,
+      "isRequired": true,
+      "version": "1.0",
+      "clauseRef": "Clause 3.1"
+    },
+    {
+      "key": "academic.scorePercentage",
+      "label": "Minimum qualifying score in qualifying examination >= 55%",
+      "operator": "GREATER_THAN_OR_EQUAL",
+      "expectedValue": 55,
+      "isActionable": true,
+      "isRequired": true,
+      "version": "1.0",
+      "clauseRef": "Clause 3.2"
+    },
+    {
+      "key": "certificates.INCOME_CERTIFICATE",
+      "label": "Valid Competent Authority Income Certificate available",
+      "operator": "EQUALS",
+      "expectedValue": true,
+      "isActionable": true,
+      "isRequired": true,
+      "version": "1.0",
+      "clauseRef": "Clause 5.1"
+    }
+  ],
+  "requiredCertificates": ["INCOME_CERTIFICATE", "MARKSHEET", "BONAFIDE_CERTIFICATE"],
+  "estimatedIssuanceDays": {
+    "INCOME_CERTIFICATE": 14,
+    "MARKSHEET": 7,
+    "BONAFIDE_CERTIFICATE": 5
+  },
+  "isDemo": true,
+  "version": "1.0"
+}
