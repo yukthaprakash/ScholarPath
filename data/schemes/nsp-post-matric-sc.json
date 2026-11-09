@@ -15,6 +15,8 @@
     "academicYear": "2026-27"
   },
   "officialUrl": "https://scholarships.gov.in",
+  "applicationUrl": "https://scholarships.gov.in/ApplicationForm/",
+  "lastVerified": "2026-10-05",
   "sourceCitation": {
     "portalName": "National Scholarship Portal (NSP)",
     "url": "https://scholarships.gov.in",
@@ -52,6 +54,16 @@
       "isRequired": true,
       "version": "1.0",
       "clauseRef": "Clause 3.1"
+    },
+    {
+      "key": "certificates.INCOME_CERTIFICATE",
+      "label": "Valid Competent Authority Income Certificate available",
+      "operator": "EQUALS",
+      "expectedValue": true,
+      "isActionable": true,
+      "isRequired": true,
+      "version": "1.0",
+      "clauseRef": "Clause 5.1"
     }
   ],
   "requiredCertificates": ["CASTE_CERTIFICATE", "INCOME_CERTIFICATE", "MARKSHEET"],

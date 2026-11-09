@@ -146,6 +146,8 @@ export interface Scheme {
     academicYear: string; // e.g. "2026-27"
   };
   officialUrl: string;
+  applicationUrl?: string;
+  lastVerified?: string;
   sourceCitation: SourceCitation;
   rules: Rule[];
   requiredCertificates: CertificateType[];
@@ -279,6 +281,9 @@ export interface BackwardsPlan {
   isFeasible: boolean;
   feasibilityReason?: string;
   steps: BackwardsPlanStep[];
+  bufferDays?: number;
+  urgencyBucket?: 'EXPIRED' | 'CRITICAL' | 'URGENT' | 'UPCOMING' | 'COMFORTABLE';
+  latestStartDate?: string;
 }
 
 export type ReadinessStatus = 'READY' | 'NEEDS_ACTION' | 'HIGH_RISK_REJECTION';

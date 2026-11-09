@@ -68,6 +68,33 @@ export function evaluatePreflight(profile: StudentProfile, scheme: Scheme): Pref
     });
   }
 
+  // Document Validity & Availability Auditing (Statutory / General Guidance)
+  for (const certType of scheme.requiredCertificates) {
+    const cert = profile.certificates.find(c => c.type === certType);
+    if (!cert || !cert.isAvailable) {
+      issues.push({
+        field: `certificates.${certType}`,
+        severity: 'WARNING',
+        issue: `(General Guidance) Required document '${certType.replace('_', ' ')}' is not yet procured.`,
+        remedy: `Apply for ${certType.replace('_', ' ')} before application submission.`,
+      });
+    } else if (cert.status === 'EXPIRED') {
+      issues.push({
+        field: `certificates.${certType}`,
+        severity: 'CRITICAL',
+        issue: `(Statutory Requirement) Document '${certType.replace('_', ' ')}' is expired.`,
+        remedy: `Renew ${certType.replace('_', ' ')} at the competent issuing authority.`,
+      });
+    } else if (cert.status === 'UNSURE') {
+      issues.push({
+        field: `certificates.${certType}`,
+        severity: 'WARNING',
+        issue: `(General Guidance) Document validity status for '${certType.replace('_', ' ')}' is unsure.`,
+        remedy: `Verify validity date and seal on ${certType.replace('_', ' ')}.`,
+      });
+    }
+  }
+
   let readinessStatus: ReadinessStatus = 'READY';
   const hasCritical = issues.some(i => i.severity === 'CRITICAL');
   const hasWarning = issues.some(i => i.severity === 'WARNING');
