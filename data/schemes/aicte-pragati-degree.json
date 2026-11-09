@@ -64,6 +64,16 @@
       "isRequired": true,
       "version": "1.0",
       "clauseRef": "Clause 6.1"
+    },
+    {
+      "key": "certificates.BONAFIDE_CERTIFICATE",
+      "label": "Bonafide Study Certificate from AICTE approved institution available",
+      "operator": "EQUALS",
+      "expectedValue": true,
+      "isActionable": true,
+      "isRequired": true,
+      "version": "1.0",
+      "clauseRef": "Clause 6.2"
     }
   ],
   "requiredCertificates": ["INCOME_CERTIFICATE", "MARKSHEET", "BONAFIDE_CERTIFICATE"],

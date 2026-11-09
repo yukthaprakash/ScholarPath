@@ -68,12 +68,8 @@
     },
     {
       "type": "BONAFIDE_CERTIFICATE",
-      "isAvailable": true,
-      "validUntil": "2027-05-31",
-      "issuedDate": "2026-08-01",
-      "issuingAuthority": "Principal, Government Engineering College",
-      "certificateNumber": "GECB/BON/2026/492",
-      "status": "VALID"
+      "isAvailable": false,
+      "status": "NOT_ISSUED"
     }
   ],
   "documentsReadiness": {

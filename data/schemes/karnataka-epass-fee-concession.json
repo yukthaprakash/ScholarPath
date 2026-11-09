@@ -1,0 +1,78 @@
+{
+  "id": "karnataka-epass-fee-concession",
+  "title": "Karnataka Post-Matric Fee Concession Scheme for Backward Classes",
+  "shortDescription": "Full tuition fee concession and college fee reimbursement for eligible OBC post-matric students studying in Karnataka government and recognized colleges.",
+  "offeringAuthority": "Backward Classes Welfare Department (BCWD), Govt. of Karnataka",
+  "authorityType": "STATE_GOVT",
+  "state": "KARNATAKA",
+  "schemeType": "FEE_WAIVER",
+  "benefitDetails": {
+    "financialAmountPerYear": 18000,
+    "description": "Exemption from tuition and laboratory fees up to Rs 18,000 per annum paid directly to institution."
+  },
+  "applicationWindow": {
+    "startDate": "2026-08-01",
+    "endDate": "2026-11-30",
+    "academicYear": "2026-27"
+  },
+  "officialUrl": "https://bcwd.karnataka.gov.in",
+  "applicationUrl": "https://ssp.postmatric.karnataka.gov.in",
+  "lastVerified": "2026-10-05",
+  "sourceCitation": {
+    "portalName": "State Scholarship Portal (SSP Karnataka) / BCWD",
+    "url": "https://bcwd.karnataka.gov.in",
+    "tier": 1,
+    "clauseRef": "BCWD Fee Concession Guidelines Section 3",
+    "verifiedDate": "2026-10-05",
+    "readOn": "2026-10-05"
+  },
+  "rules": [
+    {
+      "key": "demographics.domicileState",
+      "label": "Must be a permanent resident / domicile of Karnataka",
+      "operator": "EQUALS",
+      "expectedValue": "KARNATAKA",
+      "isActionable": false,
+      "isRequired": true,
+      "version": "1.0",
+      "clauseRef": "Clause 2.1"
+    },
+    {
+      "key": "personal.casteCategory",
+      "label": "Must belong to Backward Classes (OBC/Cat-1/2A/3A/3B)",
+      "operator": "IN_ARRAY",
+      "expectedValue": ["OBC", "SC", "ST"],
+      "isActionable": false,
+      "isRequired": true,
+      "version": "1.0",
+      "clauseRef": "Clause 2.2"
+    },
+    {
+      "key": "academic.educationLevel",
+      "label": "Enrolled in recognized Post-Matric Undergraduate or Postgraduate degree",
+      "operator": "IN_ARRAY",
+      "expectedValue": ["UNDERGRADUATE", "POSTGRADUATE", "DIPLOMA"],
+      "isActionable": false,
+      "isRequired": true,
+      "version": "1.0",
+      "clauseRef": "Clause 3.1"
+    },
+    {
+      "key": "certificates.CASTE_CERTIFICATE",
+      "label": "Valid RD Number Caste Certificate available",
+      "operator": "EQUALS",
+      "expectedValue": true,
+      "isActionable": true,
+      "isRequired": true,
+      "version": "1.0",
+      "clauseRef": "Clause 4.1"
+    }
+  ],
+  "requiredCertificates": ["CASTE_CERTIFICATE", "DOMICILE_CERTIFICATE"],
+  "estimatedIssuanceDays": {
+    "CASTE_CERTIFICATE": 21,
+    "DOMICILE_CERTIFICATE": 21
+  },
+  "isDemo": true,
+  "version": "1.0"
+}
