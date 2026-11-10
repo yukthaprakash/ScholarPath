@@ -65,7 +65,23 @@ export async function getProfileByUserId(userId: string): Promise<ProfileRecord 
   `;
 
   const res = await query<ProfileRecord>(sql, [userId]);
-  return res.rows[0] ?? null;
+  // Convert numeric fields from string to number (if not null)
+    const row = res.rows[0] ?? null;
+    if (row) {
+      const numericFields = [
+        'annualFamilyIncome',
+        'academicPercentage',
+        'disabilityPercentage',
+        'courseYear'
+      ] as const;
+      for (const field of numericFields) {
+        const val = (row as any)[field];
+        if (val !== null && val !== undefined) {
+          (row as any)[field] = Number(val);
+        }
+      }
+    }
+    return row;
 }
 
 export async function upsertProfile(userId: string, input: UpdateProfileInput): Promise<ProfileRecord> {
@@ -173,5 +189,21 @@ export async function upsertProfile(userId: string, input: UpdateProfileInput): 
   if (!res.rows[0]) {
     throw new Error('Failed to create or update profile record in database');
   }
-  return res.rows[0];
+  // Convert numeric fields for the returned row (if any)
+    const createdRow = res.rows[0];
+    if (createdRow) {
+      const numericFields = [
+        'annualFamilyIncome',
+        'academicPercentage',
+        'disabilityPercentage',
+        'courseYear'
+      ] as const;
+      for (const field of numericFields) {
+        const val = (createdRow as any)[field];
+        if (val !== null && val !== undefined) {
+          (createdRow as any)[field] = Number(val);
+        }
+      }
+    }
+    return createdRow;
 }

@@ -16,13 +16,15 @@ describe('Scheme Endpoints (/schemes, /schemes/:slug)', () => {
     });
   });
 
+  // Test search term that matches the Karnataka SSP scheme (title contains "Karnataka")
   it('filters schemes by search term', async () => {
-    const response = await request(app).get('/schemes?q=OBC');
+    const response = await request(app).get('/schemes?q=Karnataka');
 
     expect(response.status).toBe(200);
     expect(response.body.data).toBeInstanceOf(Array);
     expect(response.body.data.length).toBeGreaterThan(0);
-    expect(response.body.data[0].slug).toContain('obc');
+    // The first result should be the Karnataka SSP scheme
+    expect(response.body.data[0].slug).toContain('karnataka-ssp');
   });
 
   it('filters schemes by scope and type', async () => {
@@ -37,12 +39,12 @@ describe('Scheme Endpoints (/schemes, /schemes/:slug)', () => {
   });
 
   it('retrieves scheme details by valid slug', async () => {
-    const response = await request(app).get('/schemes/post-matric-scholarship-obc');
+    const response = await request(app).get('/schemes/karnataka-ssp-post-matric');
 
     expect(response.status).toBe(200);
     expect(response.body.scheme).toBeDefined();
-    expect(response.body.scheme.slug).toBe('post-matric-scholarship-obc');
-    expect(response.body.scheme.title).toContain('Post-Matric');
+    expect(response.body.scheme.slug).toBe('karnataka-ssp-post-matric');
+    expect(response.body.scheme.title).toContain('Karnataka SSP');
     expect(response.body.scheme.rules).toBeInstanceOf(Array);
     expect(response.body.scheme.requiredDocuments).toBeInstanceOf(Array);
     expect(response.body.scheme.trustData).toBeDefined();
