@@ -5,6 +5,7 @@ export interface College {
   district: string;
   university: string;
   code?: string;
+  isCustom?: boolean;
 }
 
 export interface CourseDegree {
@@ -12,7 +13,49 @@ export interface CourseDegree {
   level: string;
   degreeName: string;
   courseName: string;
+  isCustom?: boolean;
 }
+
+export const INDIAN_STATES: string[] = [
+  'Karnataka',
+  'Maharashtra',
+  'Tamil Nadu',
+  'Kerala',
+  'Andhra Pradesh',
+  'Telangana',
+  'Delhi',
+  'Gujarat',
+  'Uttar Pradesh',
+  'Rajasthan',
+  'Madhya Pradesh',
+  'West Bengal',
+  'Punjab',
+  'Haryana',
+  'Bihar',
+  'Odisha',
+  'Assam',
+  'Other State / UT',
+];
+
+export const KARNATAKA_DISTRICTS: string[] = [
+  'Bengaluru Urban',
+  'Bengaluru Rural',
+  'Mysuru',
+  'Dakshina Kannada (Mangaluru)',
+  'Dharwad (Hubballi)',
+  'Belagavi',
+  'Kalaburagi',
+  'Tumakuru',
+  'Shivamogga',
+  'Ballari',
+  'Udupi',
+  'Davangere',
+  'Hassan',
+  'Mandya',
+  'Chikkamagaluru',
+  'Kolar',
+  'Other District',
+];
 
 export const VERIFIED_COLLEGES: College[] = [
   {
@@ -69,9 +112,15 @@ export const VERIFIED_DEGREES: CourseDegree[] = [
   { id: 'be-cs', level: 'UNDERGRADUATE', degreeName: 'B.E.', courseName: 'Computer Science & Engineering' },
   { id: 'be-ec', level: 'UNDERGRADUATE', degreeName: 'B.E.', courseName: 'Electronics & Communication' },
   { id: 'be-me', level: 'UNDERGRADUATE', degreeName: 'B.E.', courseName: 'Mechanical Engineering' },
+  { id: 'be-civil', level: 'UNDERGRADUATE', degreeName: 'B.E.', courseName: 'Civil Engineering' },
   { id: 'bsc-gen', level: 'UNDERGRADUATE', degreeName: 'B.Sc.', courseName: 'General Sciences' },
   { id: 'bcom', level: 'UNDERGRADUATE', degreeName: 'B.Com.', courseName: 'Commerce' },
+  { id: 'ba', level: 'UNDERGRADUATE', degreeName: 'B.A.', courseName: 'Arts & Humanities' },
   { id: 'mtech-cs', level: 'POSTGRADUATE', degreeName: 'M.Tech.', courseName: 'Computer Science' },
   { id: 'msc', level: 'POSTGRADUATE', degreeName: 'M.Sc.', courseName: 'Physics / Mathematics' },
-  { id: 'puc-science', level: 'CLASS_12_PUC', degreeName: 'PUC II', courseName: 'PCMB / PCMC' },
+  { id: 'mba', level: 'POSTGRADUATE', degreeName: 'M.B.A.', courseName: 'Business Administration' },
+  { id: 'puc-science', level: 'CLASS_12_PUC', degreeName: 'PUC II', courseName: 'PCMB / PCMC Science' },
+  { id: 'puc-commerce', level: 'CLASS_12_PUC', degreeName: 'PUC II', courseName: 'Commerce / EBAC' },
+  { id: 'diploma-poly', level: 'DIPLOMA', degreeName: 'Polytechnic Diploma', courseName: 'Engineering & Technology' },
+  { id: 'phd-research', level: 'PHD_RESEARCH', degreeName: 'Ph.D.', courseName: 'Doctoral Research Fellowship' },
 ];

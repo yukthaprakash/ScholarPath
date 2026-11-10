@@ -49,3 +49,6 @@ export interface UnlockOpportunity {
   potentialTotalBenefitText: string; // e.g. "₹45,000 / yr"
   authorityDisclaimer: string; // "Preliminary assessment. Final decision rests with government authority."
 }
+
+export const MANDATORY_ELIGIBILITY_DISCLAIMER =
+  'Preliminary assessment based on published criteria. Final eligibility is determined by the respective authority.';

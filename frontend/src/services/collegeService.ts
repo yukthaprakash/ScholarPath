@@ -1,4 +1,11 @@
-import { College, CourseDegree, VERIFIED_COLLEGES, VERIFIED_DEGREES } from '../fixtures/verifiedColleges';
+import {
+  College,
+  CourseDegree,
+  VERIFIED_COLLEGES,
+  VERIFIED_DEGREES,
+  INDIAN_STATES,
+  KARNATAKA_DISTRICTS
+} from '../fixtures/verifiedColleges';
 
 export class CollegeService {
   private colleges: College[] = VERIFIED_COLLEGES;
@@ -29,6 +36,21 @@ export class CollegeService {
   public getDegreesByLevel(level?: string): CourseDegree[] {
     if (!level) return [...this.degrees];
     return this.degrees.filter((d) => d.level === level);
+  }
+
+  public getIndianStates(): string[] {
+    return [...INDIAN_STATES];
+  }
+
+  public getDistrictsByState(state?: string): string[] {
+    if (state && state.toLowerCase() === 'karnataka') {
+      return [...KARNATAKA_DISTRICTS];
+    }
+    return [
+      'District Headquarter / Urban',
+      'Rural / Block Level',
+      'Other District',
+    ];
   }
 }
 

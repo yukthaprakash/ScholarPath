@@ -8,7 +8,8 @@ export type DocumentType =
   | 'AADHAAR_CARD'
   | 'BONAFIDE_CERTIFICATE'
   | 'DISABILITY_CERTIFICATE'
-  | 'BANK_PASSBOOK_SEEDED';
+  | 'BANK_PASSBOOK_SEEDED'
+  | 'OTHER_CERTIFICATE';
 
 export type VerificationStatus =
   | 'VERIFIED'
@@ -16,15 +17,23 @@ export type VerificationStatus =
   | 'EXPIRED'
   | 'MISSING';
 
+export type AvailabilityStatus =
+  | 'AVAILABLE'
+  | 'MISSING'
+  | 'EXPIRED'
+  | 'NEEDS_VERIFICATION';
+
 export interface PassportDocument {
   id: string;
   documentType: DocumentType;
   documentName: string;
   issuer: string;
   issueDate: string;
+  expiryDate?: string;
   validityYear: string;
   referenceNumber: string; // e.g. RD Number on Govt Income/Caste Certificate
-  verificationStatus: VerificationStatus;
+  availabilityStatus?: AvailabilityStatus; // Student-reported availability
+  verificationStatus: VerificationStatus; // Government/Authority audit status
   notes?: string;
   academicYear: string;
 }

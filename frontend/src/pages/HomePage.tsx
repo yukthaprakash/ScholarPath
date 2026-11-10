@@ -1,6 +1,7 @@
 import React, { useEffect } from 'react';
 import { useProfile } from '../contexts/ProfileContext';
 import { schemeService } from '../services/schemeService';
+import { MANDATORY_ELIGIBILITY_DISCLAIMER } from '../types/eligibility';
 import { PageHeader } from '../components/layout/PageHeader';
 import { Card } from '../components/common/Card';
 import { StatusBadge } from '../components/common/StatusBadge';
@@ -16,7 +17,8 @@ import {
   FileText, 
   Server, 
   WifiOff, 
-  RefreshCw 
+  RefreshCw,
+  ShieldCheck
 } from 'lucide-react';
 
 export const HomePage: React.FC = () => {
@@ -32,6 +34,10 @@ export const HomePage: React.FC = () => {
   const eligibleMatches = matches.filter((m) => m.status === 'ELIGIBLE');
   const nearlyMatches = matches.filter((m) => m.status === 'NEARLY_ELIGIBLE');
   const verifyMatches = matches.filter((m) => m.status === 'NEEDS_VERIFICATION');
+
+  const displayName = profile.fullName ? profile.fullName.split(' ')[0] : 'Student';
+  const displayDegree = profile.degreeName ? `${profile.degreeName} (${profile.courseName || 'Enrolled'})` : 'Student Degree';
+  const displayState = profile.domicileState || 'Domicile State';
 
   return (
     <div className="space-y-8">
@@ -66,8 +72,8 @@ export const HomePage: React.FC = () => {
       </div>
 
       <PageHeader
-        title={`Welcome back, ${profile.fullName.split(' ')[0]}`}
-        subtitle={`Current Profile: ${profile.degreeName} (${profile.courseName}), ${profile.domicileState}, Income: ₹${profile.annualFamilyIncome.toLocaleString('en-IN')}/yr.`}
+        title={`Welcome back, ${displayName}`}
+        subtitle={`Current Profile: ${displayDegree}, ${displayState}, Family Income: ₹${profile.annualFamilyIncome.toLocaleString('en-IN')}/yr.`}
         action={
           <div className="flex items-center gap-2">
             <Link to="/wizard">
@@ -78,6 +84,12 @@ export const HomePage: React.FC = () => {
           </div>
         }
       />
+
+      {/* Regulatory Notice Banner */}
+      <div className="p-3 bg-paper-surface border border-line rounded-lg text-xs text-muted flex items-center gap-2 shadow-subtle">
+        <ShieldCheck className="w-4 h-4 text-green shrink-0" aria-hidden="true" />
+        <span>{MANDATORY_ELIGIBILITY_DISCLAIMER}</span>
+      </div>
 
       {/* Snapshot Cards Summary */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
@@ -126,43 +138,60 @@ export const HomePage: React.FC = () => {
         </Card>
       </div>
 
-      {/* Unlock Opportunities Section */}
+      {/* Actionable Unlocks Section */}
       {unlocks.length > 0 && (
-        <Card variant="accent-gold">
-          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+        <div className="space-y-4">
+          <div className="flex items-center justify-between">
             <div className="space-y-1">
-              <div className="flex items-center gap-2">
-                <Sparkles className="w-4 h-4 text-ink" aria-hidden="true" />
-                <span className="text-xs font-bold uppercase tracking-wider text-ink">
-                  Unlock Opportunity Identified
-                </span>
-              </div>
-              <h2 className="text-base font-bold text-ink">
-                {unlocks[0].simulatedActionTitle}
+              <h2 className="text-lg font-bold text-ink flex items-center gap-2">
+                <Sparkles className="w-4 h-4 text-gold-hover" />
+                Actionable Unlock Opportunities
               </h2>
-              <p className="text-xs text-ink/80 max-w-xl leading-relaxed">
-                {unlocks[0].description} Unlocks up to <strong className="text-ink">{unlocks[0].potentialTotalBenefitText}</strong> in additional state fee waivers.
+              <p className="text-xs text-muted">
+                Simulated changes that can bridge the distance gap to make you eligible for additional funding.
               </p>
             </div>
-            <Link to={`/schemes/${unlocks[0].newlyEligibleSchemeIds[0] || 'karnataka-ssp-post-matric'}`}>
-              <Button size="sm" variant="gold" className="shrink-0">
-                Simulate Action
-              </Button>
-            </Link>
           </div>
-        </Card>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {unlocks.map((unlock) => (
+              <Card key={unlock.id} variant="accent-gold">
+                <div className="space-y-3">
+                  <div className="flex items-start justify-between gap-2">
+                    <span className="text-xs font-bold text-ink uppercase tracking-wider">Simulated Path</span>
+                    <span className="text-xs font-extrabold text-ink bg-gold/30 px-2 py-0.5 rounded">
+                      +{unlock.potentialTotalBenefitText}
+                    </span>
+                  </div>
+                  <h3 className="text-sm font-bold text-ink">{unlock.simulatedActionTitle}</h3>
+                  <p className="text-xs text-muted leading-relaxed">{unlock.description}</p>
+                  <div className="pt-2 border-t border-gold/30 flex items-center justify-between text-xs">
+                    <span className="text-muted font-medium">
+                      Unlocks {unlock.newlyEligibleSchemeIds.length} Scheme{unlock.newlyEligibleSchemeIds.length > 1 ? 's' : ''}
+                    </span>
+                    <Link to="/wizard" className="text-ink font-bold hover:underline flex items-center gap-1">
+                      Update Profile <ArrowRight className="w-3 h-3" />
+                    </Link>
+                  </div>
+                </div>
+              </Card>
+            ))}
+          </div>
+        </div>
       )}
 
       {/* Verified Scheme Matches List */}
       <div className="space-y-4">
         <div className="flex items-center justify-between">
-          <div>
-            <h2 className="text-lg font-bold text-ink">Your Personalized Scheme Matches</h2>
-            <p className="text-xs text-muted">Evaluated strictly against published government guidelines for AY 2026–27.</p>
+          <div className="space-y-1">
+            <h2 className="text-lg font-bold text-ink">Evaluated Scheme Matches</h2>
+            <p className="text-xs text-muted">
+              Live deterministic verification of published government guidelines against your student profile.
+            </p>
           </div>
           <Link to="/explore">
-            <Button size="sm" variant="ghost" rightIcon={<ArrowRight className="w-3.5 h-3.5" />}>
-              Explore Directory
+            <Button size="sm" variant="outline">
+              Explore All Schemes
             </Button>
           </Link>
         </div>

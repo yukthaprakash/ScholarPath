@@ -1,4 +1,8 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
+import { useProfile } from '../contexts/ProfileContext';
+import { schemeService } from '../services/schemeService';
+import { Scheme, SchemeType, ScopeType } from '../types/scheme';
+import { EligibilityState, MANDATORY_ELIGIBILITY_DISCLAIMER } from '../types/eligibility';
 import { PageHeader } from '../components/layout/PageHeader';
 import { Card } from '../components/common/Card';
 import { Input } from '../components/common/Input';
@@ -7,10 +11,17 @@ import { StatusBadge } from '../components/common/StatusBadge';
 import { TrustBadge } from '../components/common/TrustBadge';
 import { Button } from '../components/common/Button';
 import { Link } from 'react-router-dom';
-import { Search, Loader2, AlertCircle, RefreshCw, ChevronLeft, ChevronRight } from 'lucide-react';
-import { schemeService } from '../services/schemeService';
-import { Scheme, SchemeType, ScopeType } from '../types/scheme';
-import { useProfile } from '../contexts/ProfileContext';
+import {
+  Search,
+  Filter,
+  ShieldCheck,
+  ArrowRight,
+  Loader2,
+  AlertCircle,
+  RefreshCw,
+  ChevronLeft,
+  ChevronRight
+} from 'lucide-react';
 
 export const ExplorePage: React.FC = () => {
   const { matches } = useProfile();
@@ -18,10 +29,11 @@ export const ExplorePage: React.FC = () => {
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
-  // Filter States
+  // Multi-Dimensional Filter States
   const [searchQuery, setSearchQuery] = useState<string>('');
-  const [selectedType, setSelectedType] = useState<string>('all');
-  const [selectedScope, setSelectedScope] = useState<string>('all');
+  const [selectedType, setSelectedType] = useState<SchemeType | 'ALL'>('ALL');
+  const [selectedScope, setSelectedScope] = useState<ScopeType | 'ALL'>('ALL');
+  const [statusFilter, setStatusFilter] = useState<EligibilityState | 'ALL'>('ALL');
   const [page, setPage] = useState<number>(1);
   const [totalPages, setTotalPages] = useState<number>(1);
   const [totalCount, setTotalCount] = useState<number>(0);
@@ -31,8 +43,8 @@ export const ExplorePage: React.FC = () => {
     setErrorMessage(null);
 
     try {
-      const typeParam = selectedType === 'all' ? undefined : (selectedType.toUpperCase() as SchemeType);
-      const scopeParam = selectedScope === 'all' ? undefined : (selectedScope.toUpperCase() as ScopeType);
+      const typeParam = selectedType === 'ALL' ? undefined : selectedType;
+      const scopeParam = selectedScope === 'ALL' ? undefined : selectedScope;
 
       const result = await schemeService.fetchSchemes({
         query: searchQuery,
@@ -50,8 +62,8 @@ export const ExplorePage: React.FC = () => {
       try {
         const fallback = schemeService.filterSchemes({
           query: searchQuery,
-          type: selectedType === 'all' ? undefined : (selectedType.toUpperCase() as SchemeType),
-          scope: selectedScope === 'all' ? undefined : (selectedScope.toUpperCase() as ScopeType),
+          type: selectedType === 'ALL' ? undefined : selectedType,
+          scope: selectedScope === 'ALL' ? undefined : selectedScope,
         });
         setSchemes(fallback);
         setTotalPages(1);
@@ -69,61 +81,105 @@ export const ExplorePage: React.FC = () => {
     loadSchemes();
   }, [loadSchemes]);
 
-  // Lookup match status from ProfileContext if evaluated
-  const getMatchStatus = (schemeId: string, schemeSlug: string) => {
-    const match = matches.find((m) => m.schemeId === schemeId || m.schemeId === schemeSlug);
-    return match?.status;
+  // Client-side filtering by eligibility state across fetched schemes
+  const displayedSchemes = useMemo(() => {
+    if (statusFilter === 'ALL') return schemes;
+    return schemes.filter((scheme) => {
+      const match = matches.find((m) => m.schemeId === scheme.id || m.schemeId === scheme.slug);
+      const matchStatus: EligibilityState = match?.status || 'NEEDS_VERIFICATION';
+      return matchStatus === statusFilter;
+    });
+  }, [schemes, matches, statusFilter]);
+
+  const handleResetFilters = () => {
+    setSearchQuery('');
+    setSelectedType('ALL');
+    setSelectedScope('ALL');
+    setStatusFilter('ALL');
+    setPage(1);
   };
 
   return (
     <div className="space-y-6">
       <PageHeader
         title="Scheme Directory"
-        subtitle="Explore all verified scholarships, fellowships, and welfare fee waivers for AY 2026–27."
+        subtitle="Explore verified scholarships, fellowships, and tuition fee waivers for AY 2026–27 evaluated against your profile."
       />
 
-      {/* Filter and Search Bar */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 p-4 bg-paper-surface border border-line rounded-lg shadow-subtle">
-        <div className="sm:col-span-1">
-          <Input
-            placeholder="Search by scheme name or keyword..."
-            value={searchQuery}
-            onChange={(e) => {
-              setSearchQuery(e.target.value);
-              setPage(1);
-            }}
-            leftIcon={<Search className="w-4 h-4" />}
-          />
+      {/* Mandatory Regulatory Assessment Notice */}
+      <div className="p-3 bg-paper-surface border border-line rounded-lg text-xs text-muted flex items-center gap-2 shadow-subtle">
+        <ShieldCheck className="w-4 h-4 text-green shrink-0" aria-hidden="true" />
+        <span>{MANDATORY_ELIGIBILITY_DISCLAIMER}</span>
+      </div>
+
+      {/* Search and Multi-Dimensional Filter Bar */}
+      <div className="p-4 bg-paper-surface border border-line rounded-lg shadow-subtle space-y-3">
+        <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-ink">
+          <Filter className="w-3.5 h-3.5" />
+          <span>Filter & Search Schemes</span>
         </div>
-        <div>
-          <Select
-            options={[
-              { value: 'all', label: 'All Scheme Types' },
-              { value: 'scholarship', label: 'Scholarships' },
-              { value: 'fellowship', label: 'Fellowships' },
-              { value: 'fee_waiver', label: 'Fee Waivers' },
-              { value: 'hostel_stipend', label: 'Hostel / Stipend' },
-            ]}
-            value={selectedType}
-            onChange={(e) => {
-              setSelectedType(e.target.value);
-              setPage(1);
-            }}
-          />
-        </div>
-        <div>
-          <Select
-            options={[
-              { value: 'all', label: 'All Jurisdictions' },
-              { value: 'central', label: 'Central Govt (All-India)' },
-              { value: 'state', label: 'State Government' },
-            ]}
-            value={selectedScope}
-            onChange={(e) => {
-              setSelectedScope(e.target.value);
-              setPage(1);
-            }}
-          />
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+          <div>
+            <Input
+              placeholder="Search by name or provider..."
+              value={searchQuery}
+              onChange={(e) => {
+                setSearchQuery(e.target.value);
+                setPage(1);
+              }}
+              leftIcon={<Search className="w-4 h-4" />}
+            />
+          </div>
+
+          <div>
+            <Select
+              options={[
+                { value: 'ALL', label: 'All Eligibility States' },
+                { value: 'ELIGIBLE', label: 'Eligible Only' },
+                { value: 'NEARLY_ELIGIBLE', label: 'Nearly Eligible' },
+                { value: 'NEEDS_VERIFICATION', label: 'Needs Verification' },
+                { value: 'NOT_MATCHED', label: 'Not Matched' },
+              ]}
+              value={statusFilter}
+              onChange={(e) => {
+                setStatusFilter(e.target.value as EligibilityState | 'ALL');
+                setPage(1);
+              }}
+            />
+          </div>
+
+          <div>
+            <Select
+              options={[
+                { value: 'ALL', label: 'All Scheme Types' },
+                { value: 'SCHOLARSHIP', label: 'Scholarships' },
+                { value: 'FEE_WAIVER', label: 'Fee Waivers' },
+                { value: 'HOSTEL_STIPEND', label: 'Hostel / Stipend' },
+                { value: 'FELLOWSHIP', label: 'Fellowships' },
+              ]}
+              value={selectedType}
+              onChange={(e) => {
+                setSelectedType(e.target.value as SchemeType | 'ALL');
+                setPage(1);
+              }}
+            />
+          </div>
+
+          <div>
+            <Select
+              options={[
+                { value: 'ALL', label: 'All Jurisdictions' },
+                { value: 'CENTRAL', label: 'Central Govt (All-India)' },
+                { value: 'STATE', label: 'State Schemes (SSP / Domicile)' },
+              ]}
+              value={selectedScope}
+              onChange={(e) => {
+                setSelectedScope(e.target.value as ScopeType | 'ALL');
+                setPage(1);
+              }}
+            />
+          </div>
         </div>
       </div>
 
@@ -148,62 +204,64 @@ export const ExplorePage: React.FC = () => {
           <Loader2 className="w-6 h-6 animate-spin text-ink" />
           <p className="text-xs text-muted font-medium">Loading verified schemes from government registry...</p>
         </div>
-      ) : schemes.length === 0 ? (
+      ) : displayedSchemes.length === 0 ? (
         /* Empty State */
-        <div className="text-center p-12 bg-paper-surface border border-line rounded-lg space-y-3">
-          <h3 className="text-base font-bold text-ink">No schemes match your search criteria</h3>
-          <p className="text-xs text-muted max-w-md mx-auto">
-            Try adjusting your search keywords, scheme type, or jurisdiction filters to see more results.
+        <Card className="text-center py-8">
+          <p className="text-sm font-bold text-ink">No schemes match your selected filters</p>
+          <p className="text-xs text-muted mt-1 mb-3">
+            Try adjusting your search query, scheme type, jurisdiction, or eligibility state filters.
           </p>
-          <Button
-            size="sm"
-            variant="outline"
-            onClick={() => {
-              setSearchQuery('');
-              setSelectedType('all');
-              setSelectedScope('all');
-              setPage(1);
-            }}
-          >
-            Clear All Filters
+          <Button size="sm" variant="outline" onClick={handleResetFilters}>
+            Reset All Filters
           </Button>
-        </div>
+        </Card>
       ) : (
         /* Scheme List */
         <div className="space-y-3">
           <div className="flex items-center justify-between text-xs text-muted px-1">
-            <span>Showing {schemes.length} of {totalCount} verified schemes</span>
-            <span>Page {page} of {totalPages}</span>
+            <span>Showing {displayedSchemes.length} of {totalCount || schemes.length} verified schemes</span>
+            {totalPages > 1 && <span>Page {page} of {totalPages}</span>}
           </div>
 
-          {schemes.map((scheme) => {
-            const status = getMatchStatus(scheme.id, scheme.slug);
+          {displayedSchemes.map((scheme) => {
+            const match = matches.find((m) => m.schemeId === scheme.id || m.schemeId === scheme.slug);
+            const status: EligibilityState = match?.status || 'NEEDS_VERIFICATION';
 
             return (
               <Card key={scheme.id}>
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                   <div className="space-y-1.5 flex-1">
                     <div className="flex flex-wrap items-center gap-2">
-                      {status && <StatusBadge status={status} size="sm" />}
+                      <StatusBadge status={status} size="sm" />
                       <TrustBadge tier={scheme.sourceTier} sourceName={scheme.officialSource} />
-                      <span className="text-xs text-muted font-medium">
-                        {scheme.scope === 'STATE' && scheme.targetState ? `State: ${scheme.targetState}` : 'Central Govt (All-India)'}
-                        {' · '}
-                        {scheme.benefitAmountText}
+                      <span className="text-xs font-semibold text-muted">
+                        Deadline: {scheme.deadlineDate}
                       </span>
                     </div>
-                    <h3 className="text-base font-bold text-ink">
-                      {scheme.name}
-                    </h3>
-                    <p className="text-xs text-muted line-clamp-2">
+
+                    <h3 className="text-base font-bold text-ink">{scheme.name}</h3>
+                    <p className="text-xs text-muted">
+                      {scheme.provider} · <strong className="text-ink font-semibold">{scheme.benefitAmountText}</strong>
+                    </p>
+
+                    <p className="text-xs text-muted/90 line-clamp-2">
                       {scheme.description}
                     </p>
+
+                    {match?.distanceGap && (
+                      <p className="text-xs text-gold-hover font-semibold">
+                        Gap Notice: {match.distanceGap}
+                      </p>
+                    )}
                   </div>
-                  <Link to={`/schemes/${scheme.slug}`} className="shrink-0">
-                    <Button size="sm" variant={status === 'ELIGIBLE' ? 'primary' : 'secondary'}>
-                      View Scheme
-                    </Button>
-                  </Link>
+
+                  <div className="flex items-center gap-2 shrink-0">
+                    <Link to={`/schemes/${scheme.slug}`}>
+                      <Button size="sm" variant={status === 'ELIGIBLE' ? 'primary' : 'outline'} rightIcon={<ArrowRight className="w-3.5 h-3.5" />}>
+                        View Scheme Receipt
+                      </Button>
+                    </Link>
+                  </div>
                 </div>
               </Card>
             );

@@ -1,26 +1,25 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useParams, Link } from 'react-router-dom';
+import { useProfile } from '../contexts/ProfileContext';
+import { schemeService } from '../services/schemeService';
+import { eligibilityService, BackendSchemeExplanation } from '../services/eligibilityService';
+import { Scheme } from '../types/scheme';
+import { MANDATORY_ELIGIBILITY_DISCLAIMER } from '../types/eligibility';
 import { PageHeader } from '../components/layout/PageHeader';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '../components/common/Card';
 import { StatusBadge } from '../components/common/StatusBadge';
 import { TrustBadge } from '../components/common/TrustBadge';
 import { Button } from '../components/common/Button';
 import { Select } from '../components/common/Select';
-import { 
-  ExternalLink, 
-  Loader2, 
-  AlertCircle, 
-  Sparkles, 
-  ShieldCheck, 
-  CheckCircle2, 
-  HelpCircle, 
-  Calendar, 
-  ArrowLeft 
+import {
+  ExternalLink,
+  ArrowLeft,
+  ShieldCheck,
+  Calendar,
+  AlertCircle,
+  Sparkles,
+  Loader2
 } from 'lucide-react';
-import { schemeService } from '../services/schemeService';
-import { eligibilityService, BackendSchemeExplanation } from '../services/eligibilityService';
-import { Scheme } from '../types/scheme';
-import { useProfile } from '../contexts/ProfileContext';
 
 export const SchemeDetailPage: React.FC = () => {
   const { slug } = useParams<{ slug: string }>();
@@ -33,9 +32,6 @@ export const SchemeDetailPage: React.FC = () => {
   const [isLoadingExplanation, setIsLoadingExplanation] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
 
-  // Match result from ProfileContext
-  const currentMatch = matches.find((m) => m.schemeId === scheme?.id || m.schemeId === slug);
-
   // 1. Load Scheme Metadata
   const loadScheme = useCallback(async () => {
     if (!slug) return;
@@ -45,7 +41,7 @@ export const SchemeDetailPage: React.FC = () => {
     try {
       const data = await schemeService.fetchSchemeBySlug(slug);
       setScheme(data);
-    } catch (err: unknown) {
+    } catch {
       // Try local fallback
       const local = schemeService.getSchemeByIdOrSlug(slug);
       if (local) {
@@ -69,12 +65,11 @@ export const SchemeDetailPage: React.FC = () => {
         language: lang,
       });
 
-      // Handle single scheme explanation response
       if ('explanation' in result) {
         setExplanation(result as BackendSchemeExplanation);
       }
     } catch {
-      // Explanation API unavailable or profile incomplete: non-fatal, recipe continues with engine data
+      // Explanation API unavailable: non-fatal, deterministic receipt continues with engine data
     } finally {
       setIsLoadingExplanation(false);
     }
@@ -101,33 +96,33 @@ export const SchemeDetailPage: React.FC = () => {
 
   if (error || !scheme) {
     return (
-      <div className="space-y-6">
-        <PageHeader title="Scheme Not Found" backHref="/explore" backLabel="Directory" />
-        <Card className="p-8 text-center space-y-4">
-          <AlertCircle className="w-8 h-8 text-red mx-auto" />
-          <h2 className="text-lg font-bold text-ink">Scheme Not Found</h2>
-          <p className="text-xs text-muted max-w-md mx-auto">
-            {error || `We could not locate scheme '${slug}'. It may have been archived or updated.`}
-          </p>
-          <Link to="/explore">
-            <Button size="sm" variant="primary" leftIcon={<ArrowLeft className="w-3.5 h-3.5" />}>
-              Return to Scheme Directory
-            </Button>
-          </Link>
-        </Card>
+      <div className="space-y-6 max-w-xl mx-auto py-12 text-center">
+        <AlertCircle className="w-8 h-8 text-red mx-auto" />
+        <h2 className="text-xl font-bold text-ink">Scheme Not Found</h2>
+        <p className="text-xs text-muted">
+          {error || `The requested scheme '${slug}' could not be located in the AY 2026–27 verified catalogue.`}
+        </p>
+        <Link to="/explore">
+          <Button variant="outline" leftIcon={<ArrowLeft className="w-3.5 h-3.5" />}>
+            Back to Scheme Directory
+          </Button>
+        </Link>
       </div>
     );
   }
 
-  const matchStatus = explanation?.state || currentMatch?.status || 'ELIGIBLE';
+  const match = matches.find((m) => m.schemeId === scheme.id || m.schemeId === slug);
+  const status = match?.status || 'NEEDS_VERIFICATION';
+  const clauses = match?.ruleTrace.clauses || [];
+  const preflights = match?.preflightChecks || [];
 
   return (
     <div className="space-y-8">
       <PageHeader
         title={scheme.name}
         subtitle={`${scheme.provider} · ${scheme.authority}`}
-        backHref="/home"
-        backLabel="Matches"
+        backHref="/explore"
+        backLabel="Scheme Directory"
         action={
           <div className="flex items-center gap-2">
             <Link to="/compare">
@@ -148,8 +143,14 @@ export const SchemeDetailPage: React.FC = () => {
         }
       />
 
+      {/* Regulatory Notice Banner */}
+      <div className="p-3 bg-paper-surface border border-line rounded-lg text-xs text-muted flex items-center gap-2 shadow-subtle">
+        <ShieldCheck className="w-4 h-4 text-green shrink-0" aria-hidden="true" />
+        <span>{MANDATORY_ELIGIBILITY_DISCLAIMER}</span>
+      </div>
+
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Main 2 Cols: Eligibility Receipt Foundation & AI Plain Language Explanation */}
+        {/* Main 2 Cols: AI Plain Language Explanation & Eligibility Receipt */}
         <div className="lg:col-span-2 space-y-6">
           {/* AI Plain-Language Explanation Card */}
           <Card variant="accent-gold">
@@ -215,66 +216,56 @@ export const SchemeDetailPage: React.FC = () => {
             </CardContent>
           </Card>
 
-          {/* Eligibility Receipt Card */}
+          {/* Deterministic Eligibility Receipt Card */}
           <Card>
             <CardHeader>
               <div className="flex items-center justify-between">
-                <StatusBadge status={matchStatus} />
+                <StatusBadge status={status} />
                 <TrustBadge tier={scheme.sourceTier} sourceName={scheme.officialSource} />
               </div>
               <CardTitle className="mt-3">Eligibility Receipt</CardTitle>
               <CardDescription>
-                Deterministic rule trace. Each published clause is evaluated against your criteria.
+                Deterministic rule trace. Each published clause is evaluated against your criteria without probabilistic AI decision-making.
               </CardDescription>
             </CardHeader>
             <CardContent>
+              {match?.distanceGap && (
+                <div className="mb-4 p-3 bg-gold-surface border border-gold/40 rounded text-xs text-ink flex items-start gap-2">
+                  <AlertCircle className="w-4 h-4 text-gold-hover shrink-0 mt-0.5" />
+                  <div>
+                    <span className="font-bold">Distance Gap: </span>
+                    {match.distanceGap}
+                    {match.suggestedAction && <p className="text-muted mt-0.5">{match.suggestedAction}</p>}
+                  </div>
+                </div>
+              )}
+
               <div className="border border-line rounded-md overflow-hidden text-xs">
-                <div className="grid grid-cols-4 bg-paper-muted p-2.5 font-bold text-ink border-b border-line">
-                  <span>Clause</span>
-                  <span>Your Data</span>
-                  <span>Required</span>
-                  <span className="text-right">Result</span>
+                <div className="grid grid-cols-12 bg-paper-muted p-2.5 font-bold text-ink border-b border-line">
+                  <span className="col-span-4">Rule Clause</span>
+                  <span className="col-span-3">Your Profile</span>
+                  <span className="col-span-3">Published Rule</span>
+                  <span className="col-span-2 text-right">Result</span>
                 </div>
                 <div className="divide-y divide-line">
-                  {/* Real evaluation clauses if available */}
-                  {currentMatch?.ruleTrace?.clauses && currentMatch.ruleTrace.clauses.length > 0 ? (
-                    currentMatch.ruleTrace.clauses.map((clause, idx) => (
-                      <div key={idx} className="grid grid-cols-4 p-2.5 items-center gap-2">
-                        <span className="font-medium text-ink">{clause.clauseName}</span>
-                        <span className="text-muted truncate">{clause.studentValue}</span>
-                        <span className="text-muted truncate">{clause.expectedValue}</span>
-                        <div className="flex justify-end">
-                          <StatusBadge 
-                            status={clause.result === 'PASS' ? 'ELIGIBLE' : clause.result === 'NEEDS_VERIFICATION' ? 'NEEDS_VERIFICATION' : 'NOT_MATCHED'} 
-                            size="sm" 
-                            customLabel={clause.result === 'PASS' ? 'Pass' : clause.result === 'NEEDS_VERIFICATION' ? 'Verify' : 'Fail'} 
+                  {clauses.length > 0 ? (
+                    clauses.map((clause, idx) => (
+                      <div key={idx} className="grid grid-cols-12 p-2.5 items-center">
+                        <div className="col-span-4 pr-1">
+                          <span className="font-semibold text-ink block">{clause.clauseName}</span>
+                          <span className="text-[10px] text-muted block truncate">{clause.citationSource}</span>
+                        </div>
+                        <span className="col-span-3 text-muted pr-1 truncate">{clause.studentValue}</span>
+                        <span className="col-span-3 text-muted pr-1 truncate">{clause.expectedValue}</span>
+                        <div className="col-span-2 flex justify-end">
+                          <StatusBadge
+                            status={clause.result === 'PASS' ? 'READY' : clause.result === 'NEEDS_VERIFICATION' ? 'VERIFY' : 'MISSING'}
+                            size="sm"
+                            customLabel={clause.result === 'PASS' ? 'Pass' : clause.result === 'NEEDS_VERIFICATION' ? 'Audit' : 'Fail'}
                           />
                         </div>
                       </div>
                     ))
-                  ) : explanation?.details ? (
-                    <>
-                      {explanation.details.satisfiedRequirements.map((req, idx) => (
-                        <div key={`pass-${idx}`} className="grid grid-cols-4 p-2.5 items-center gap-2">
-                          <span className="font-medium text-ink">{req.label}</span>
-                          <span className="text-muted">{String(req.studentValue ?? 'Satisfied')}</span>
-                          <span className="text-muted">{String(req.expectedValue ?? 'Eligible')}</span>
-                          <div className="flex justify-end">
-                            <StatusBadge status="ELIGIBLE" size="sm" customLabel="Pass" />
-                          </div>
-                        </div>
-                      ))}
-                      {explanation.details.failedRequirements.map((req, idx) => (
-                        <div key={`fail-${idx}`} className="grid grid-cols-4 p-2.5 items-center gap-2">
-                          <span className="font-medium text-ink">{req.label}</span>
-                          <span className="text-muted">{String(req.studentValue ?? 'Unmatched')}</span>
-                          <span className="text-muted">{String(req.expectedValue ?? 'Required')}</span>
-                          <div className="flex justify-end">
-                            <StatusBadge status="NOT_MATCHED" size="sm" customLabel="Fail" />
-                          </div>
-                        </div>
-                      ))}
-                    </>
                   ) : (
                     <div className="p-4 text-center text-muted">
                       No evaluation record found. Update your profile to generate an eligibility receipt.
@@ -295,18 +286,15 @@ export const SchemeDetailPage: React.FC = () => {
             </CardHeader>
             <CardContent>
               <ul className="space-y-2.5 text-xs">
-                <li className="flex items-start gap-2">
-                  <CheckCircle2 className="w-4 h-4 text-green shrink-0 mt-0.5" />
-                  <span className="text-ink">Aadhaar seeded with active bank account for DBT</span>
-                </li>
-                <li className="flex items-start gap-2">
-                  <CheckCircle2 className="w-4 h-4 text-green shrink-0 mt-0.5" />
-                  <span className="text-ink">Institution registered on authorized government portal</span>
-                </li>
-                <li className="flex items-start gap-2">
-                  <HelpCircle className="w-4 h-4 text-gold-hover shrink-0 mt-0.5" />
-                  <span className="text-ink">Income certificate issued for current academic cycle</span>
-                </li>
+                {preflights.map((pf) => (
+                  <li key={pf.id} className="flex items-start gap-2">
+                    <StatusBadge status={pf.status === 'READY' ? 'READY' : 'VERIFY'} size="sm" />
+                    <div>
+                      <span className="text-ink font-semibold block">{pf.checkName}</span>
+                      <span className="text-muted text-[11px] leading-tight block">{pf.rationale}</span>
+                    </div>
+                  </li>
+                ))}
               </ul>
             </CardContent>
           </Card>
@@ -314,7 +302,7 @@ export const SchemeDetailPage: React.FC = () => {
           <Card variant="muted">
             <CardHeader>
               <div className="flex items-center gap-1.5">
-                <Calendar className="w-4 h-4 text-muted" />
+                <Calendar className="w-4 h-4 text-ink" />
                 <CardTitle className="text-base">Application Critical Path</CardTitle>
               </div>
               <CardDescription>Academic Year {scheme.academicYear} Cycle</CardDescription>

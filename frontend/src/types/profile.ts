@@ -14,7 +14,11 @@ export type SocialCategory =
   | 'OBC'
   | 'GENERAL'
   | 'EWS'
-  | 'MINORITY';
+  | 'MINORITY'
+  | 'OTHER'
+  | 'NOT_DISCLOSED';
+
+export type ThreeWayStatus = 'YES' | 'NO' | 'UNKNOWN';
 
 export interface StudentProfile {
   id: string;
@@ -27,7 +31,7 @@ export interface StudentProfile {
   gender: 'MALE' | 'FEMALE' | 'OTHER' | 'PREFER_NOT_TO_SAY';
   email?: string;
   phoneNumber?: string;
-  
+
   // Residency / Domicile
   domicileState: string;
   currentState?: string;
@@ -39,8 +43,10 @@ export interface StudentProfile {
   subCategory?: string;
   casteCertificateAvailable?: boolean;
   isMinority: boolean;
+  minorityStatus?: ThreeWayStatus;
   minorityCommunity?: 'MUSLIM' | 'CHRISTIAN' | 'SIKH' | 'BUDDHIST' | 'JAIN' | 'PARSI';
   isPersonWithDisability: boolean;
+  disabilityStatus?: ThreeWayStatus;
   disabilityPercentage?: number;
   disabilityCertificateAvailable?: boolean;
   specialCategory?: string;
@@ -62,6 +68,8 @@ export interface StudentProfile {
   isCgpa: boolean;
   previousYearPassed: boolean;
   institutionType?: 'GOVERNMENT' | 'AIDED' | 'PRIVATE' | 'DEEMED';
+  isCustomInstitution?: boolean;
+  isCustomCourse?: boolean;
 
   // Financial Details
   annualFamilyIncome: number; // in INR e.g. 200000
@@ -80,5 +88,7 @@ export interface StudentProfile {
 
   // Document Passport Metadata
   documents: PassportDocument[];
-}
 
+  // Profile metadata
+  updatedAt?: string;
+}

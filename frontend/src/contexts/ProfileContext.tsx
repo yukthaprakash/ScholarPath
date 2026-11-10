@@ -7,6 +7,14 @@ import { eligibilityService, mapBackendMatchToFrontend } from '../services/eligi
 import { ApiError } from '../services/apiClient';
 import { useAuth } from './AuthContext';
 
+export interface RecalculateResult {
+  success: boolean;
+  eligibleCount: number;
+  totalEvaluated: number;
+  evaluatedAt: string;
+  errorMessage?: string;
+}
+
 interface ProfileContextType {
   profile: StudentProfile;
   isLoading: boolean;
@@ -19,9 +27,10 @@ interface ProfileContextType {
   completionStats: ProfileCompletionStats;
   matches: MatchResult[];
   unlocks: UnlockOpportunity[];
+  lastEvaluatedAt: string;
   updateProfile: (updated: StudentProfile) => Promise<void> | void;
   updateProfileSection: (sectionData: Partial<StudentProfile>) => Promise<void> | void;
-  recalculateEligibility: () => Promise<void> | void;
+  recalculateEligibility: () => Promise<RecalculateResult>;
   resetProfile: () => Promise<void> | void;
   clearApiError: () => void;
 }
@@ -29,27 +38,63 @@ interface ProfileContextType {
 const ProfileContext = createContext<ProfileContextType | undefined>(undefined);
 
 export const ProfileProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const { markProfileCompleted } = useAuth();
-  const [profile, setProfile] = useState<StudentProfile>(() => profileService.getProfile());
+  const { user, markProfileCompleted } = useAuth();
+
+  // Initialize profile scoped to current authenticated user
+  const [profile, setProfile] = useState<StudentProfile>(() => {
+    return profileService.getProfile(user?.id, user ? { id: user.id, name: user.name, email: user.email } : undefined);
+  });
+
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [isSyncing, setIsSyncing] = useState<boolean>(false);
   const [apiError, setApiError] = useState<string | null>(null);
   const [isDemoMode, setIsDemoMode] = useState<boolean>(false);
   const [matches, setMatches] = useState<MatchResult[]>([]);
   const [unlocks, setUnlocks] = useState<UnlockOpportunity[]>([]);
-
-  // Compute stats on profile change
-  const completionStats = profileService.calculateCompletion(profile);
+  const [lastEvaluatedAt, setLastEvaluatedAt] = useState<string>(new Date().toISOString());
 
   const clearApiError = useCallback(() => {
     setApiError(null);
+  }, []);
+
+  // Deterministically compute matches and unlock opportunities locally
+  const evaluateLocally = useCallback((targetProfile: StudentProfile): RecalculateResult => {
+    try {
+      const allSchemes = schemeService.getAllSchemes();
+      const results = eligibilityService.evaluateAll(targetProfile, allSchemes);
+      const unlockItems = eligibilityService.identifyUnlocks(targetProfile, allSchemes);
+      const now = new Date().toISOString();
+
+      setMatches(results);
+      setUnlocks(unlockItems);
+      setLastEvaluatedAt(now);
+
+      const eligibleCount = results.filter((r) => r.status === 'ELIGIBLE').length;
+
+      return {
+        success: true,
+        eligibleCount,
+        totalEvaluated: results.length,
+        evaluatedAt: now,
+      };
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : 'Evaluation rule processing failure';
+      console.error('ScholarPath deterministic evaluation failed:', err);
+      return {
+        success: false,
+        eligibleCount: 0,
+        totalEvaluated: 0,
+        evaluatedAt: new Date().toISOString(),
+        errorMessage: message,
+      };
+    }
   }, []);
 
   /**
    * Recalculate eligibility with backend engine: POST /api/v1/eligibility/evaluate
    * Gracefully falls back to deterministic local evaluation only if offline or demo mode
    */
-  const computeMatches = useCallback(async (targetProfile: StudentProfile) => {
+  const computeMatches = useCallback(async (targetProfile: StudentProfile): Promise<RecalculateResult> => {
     try {
       const evalResponse = await eligibilityService.evaluateWithBackend();
       if (evalResponse && evalResponse.matches && evalResponse.matches.length > 0) {
@@ -60,9 +105,19 @@ export const ProfileProvider: React.FC<{ children: React.ReactNode }> = ({ child
         const catalog = schemeService.getAllSchemes();
         const unlockItems = eligibilityService.identifyUnlocks(targetProfile, catalog);
         setUnlocks(unlockItems);
+
+        const now = evalResponse.evaluatedAt || new Date().toISOString();
+        setLastEvaluatedAt(now);
         setIsDemoMode(false);
         setApiError(null);
-        return;
+
+        const eligibleCount = evalResponse.summary?.eligibleCount ?? mappedMatches.filter((m) => m.status === 'ELIGIBLE').length;
+        return {
+          success: true,
+          eligibleCount,
+          totalEvaluated: mappedMatches.length,
+          evaluatedAt: now,
+        };
       }
     } catch (err: unknown) {
       if (err instanceof ApiError) {
@@ -72,13 +127,27 @@ export const ProfileProvider: React.FC<{ children: React.ReactNode }> = ({ child
         } else if (err.status === 404) {
           // Profile not yet created on backend: sync it first
           try {
-            await profileService.saveProfileToBackend(targetProfile);
+            await profileService.saveProfileToBackend(targetProfile, user?.id);
             const retryEval = await eligibilityService.evaluateWithBackend();
             const mapped = retryEval.matches.map(mapBackendMatchToFrontend);
             setMatches(mapped);
+
+            const catalog = schemeService.getAllSchemes();
+            const unlockItems = eligibilityService.identifyUnlocks(targetProfile, catalog);
+            setUnlocks(unlockItems);
+
+            const now = retryEval.evaluatedAt || new Date().toISOString();
+            setLastEvaluatedAt(now);
             setIsDemoMode(false);
             setApiError(null);
-            return;
+
+            const eligibleCount = retryEval.summary?.eligibleCount ?? mapped.filter((m) => m.status === 'ELIGIBLE').length;
+            return {
+              success: true,
+              eligibleCount,
+              totalEvaluated: mapped.length,
+              evaluatedAt: now,
+            };
           } catch {
             setIsDemoMode(true);
           }
@@ -91,23 +160,30 @@ export const ProfileProvider: React.FC<{ children: React.ReactNode }> = ({ child
     }
 
     // Fallback: evaluate locally against verified scheme catalog
-    const allSchemes = schemeService.getAllSchemes();
-    const results = eligibilityService.evaluateAll(targetProfile, allSchemes);
-    const unlockItems = eligibilityService.identifyUnlocks(targetProfile, allSchemes);
-    setMatches(results);
-    setUnlocks(unlockItems);
-  }, []);
+    return evaluateLocally(targetProfile);
+  }, [evaluateLocally, user?.id]);
 
-  // Initial load: sync profile from backend GET /profile, then evaluate
+  // Synchronize profile when authenticated user changes or on initial load
   useEffect(() => {
     let isMounted = true;
 
     async function initializeProfile() {
       setIsLoading(true);
-      let activeProfile = profileService.getProfile();
 
+      // 1. Initial user-scoped local load
+      let activeProfile = profileService.getProfile(
+        user?.id,
+        user ? { id: user.id, name: user.name, email: user.email } : undefined
+      );
+
+      if (isMounted) {
+        setProfile(activeProfile);
+        evaluateLocally(activeProfile);
+      }
+
+      // 2. Remote backend hydration
       try {
-        const backendProfile = await profileService.getProfileFromBackend();
+        const backendProfile = await profileService.getProfileFromBackend(user?.id);
         if (isMounted && backendProfile) {
           activeProfile = backendProfile;
           setProfile(backendProfile);
@@ -135,15 +211,19 @@ export const ProfileProvider: React.FC<{ children: React.ReactNode }> = ({ child
     return () => {
       isMounted = false;
     };
-  }, [computeMatches]);
+  }, [user?.id, computeMatches, evaluateLocally]);
+
+  // Dynamic completion calculation
+  const completionStats = profileService.calculateCompletion(profile);
 
   // Full Profile Update with real backend PUT /profile sync
   const updateProfile = async (updated: StudentProfile) => {
-    // 1. Optimistic local update
-    setProfile(updated);
-    profileService.saveProfile(updated);
+    // 1. Optimistic user-scoped local update
+    const saved = profileService.saveProfile(updated, user?.id);
+    setProfile(saved);
+    evaluateLocally(saved);
 
-    const stats = profileService.calculateCompletion(updated);
+    const stats = profileService.calculateCompletion(saved);
     if (stats.isComplete) {
       markProfileCompleted(true);
     }
@@ -151,7 +231,7 @@ export const ProfileProvider: React.FC<{ children: React.ReactNode }> = ({ child
     // 2. Asynchronous backend persistence
     setIsSyncing(true);
     try {
-      const persisted = await profileService.saveProfileToBackend(updated);
+      const persisted = await profileService.saveProfileToBackend(saved, user?.id);
       setProfile(persisted);
       await computeMatches(persisted);
       setApiError(null);
@@ -162,7 +242,7 @@ export const ProfileProvider: React.FC<{ children: React.ReactNode }> = ({ child
         setApiError('Failed to synchronize profile with backend.');
       }
       // Re-evaluate locally on error
-      await computeMatches(updated);
+      await computeMatches(saved);
     } finally {
       setIsSyncing(false);
     }
@@ -178,10 +258,10 @@ export const ProfileProvider: React.FC<{ children: React.ReactNode }> = ({ child
   };
 
   // Trigger manual re-evaluation
-  const recalculateEligibility = async () => {
+  const recalculateEligibility = async (): Promise<RecalculateResult> => {
     setIsSyncing(true);
     try {
-      await computeMatches(profile);
+      return await computeMatches(profile);
     } finally {
       setIsSyncing(false);
     }
@@ -189,11 +269,12 @@ export const ProfileProvider: React.FC<{ children: React.ReactNode }> = ({ child
 
   // Reset to default demo profile
   const resetProfile = async () => {
-    const reset = profileService.resetToDefault();
+    const reset = profileService.resetToDefault(user?.id);
     setProfile(reset);
+    evaluateLocally(reset);
     setIsSyncing(true);
     try {
-      await profileService.saveProfileToBackend(reset);
+      await profileService.saveProfileToBackend(reset, user?.id);
       await computeMatches(reset);
     } catch {
       await computeMatches(reset);
@@ -216,6 +297,7 @@ export const ProfileProvider: React.FC<{ children: React.ReactNode }> = ({ child
         completionStats,
         matches,
         unlocks,
+        lastEvaluatedAt,
         updateProfile,
         updateProfileSection,
         recalculateEligibility,
