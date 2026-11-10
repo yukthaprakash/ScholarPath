@@ -1,5 +1,4 @@
 import { query, checkDatabaseHealth } from '../db';
-import { env } from '../config/env';
 import { CreateDocumentInput } from '../schemas/documentSchema';
 import { NotFoundError, AuthorizationError } from '../errors/AppError';
 import { upsertUser } from './userService';
@@ -131,10 +130,10 @@ export async function deleteDocument(userId: string, documentId: string): Promis
   // 2. Delete document
   const deleteSql = `DELETE FROM documents WHERE id = $1 AND user_id = $2`;
   // Delete document and verify deletion
-    const deleteRes = await query(deleteSql, [documentId, userId]);
-    if (!deleteRes.rowCount || deleteRes.rowCount === 0) {
-      throw new NotFoundError(`Document with ID '${documentId}' not found`);
-    }
-    // No explicit return needed (void)
+  const deleteRes = await query(deleteSql, [documentId, userId]);
+  if (!deleteRes.rowCount || deleteRes.rowCount === 0) {
+    throw new NotFoundError(`Document with ID '${documentId}' not found`);
+  }
+  // No explicit return needed (void)
 
 }
