@@ -113,7 +113,7 @@ describe('Document Metadata Endpoints (/documents)', () => {
       ...envModule.env,
       AUTH_MODE: 'demo'
     });
-
+    vi.spyOn(dbModule, 'checkDatabaseHealth').mockResolvedValue(false);
     const app = createApp();
     const response = await request(app)
       .delete('/documents/non-existent-doc-999')

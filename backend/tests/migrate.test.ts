@@ -17,7 +17,7 @@ describe('Database Migration Runner', () => {
           return Promise.resolve({ rows: [] });
         }
         if (queryText.includes('SELECT name FROM _schema_migrations')) {
-          return Promise.resolve({ rows: [{ name: '001_initial_schema.sql' }] });
+          return Promise.resolve({ rows: [{ name: '001_initial_schema.sql' }, { name: '002_add_imported_by.sql' }, { name: '003_create_scheme_audit.sql' }, { name: '004_create_dataset_info.sql' }] });
         }
         return Promise.resolve({ rows: [] });
       }),
@@ -29,7 +29,12 @@ describe('Database Migration Runner', () => {
     const result = await runMigrations();
 
     expect(result.applied).toEqual([]);
-    expect(result.skipped).toEqual(['001_initial_schema.sql']);
+    expect(result.skipped).toEqual([
+      '001_initial_schema.sql',
+      '002_add_imported_by.sql',
+      '003_create_scheme_audit.sql',
+      '004_create_dataset_info.sql'
+    ]);
     expect(mockClient.release).toHaveBeenCalled();
   });
 

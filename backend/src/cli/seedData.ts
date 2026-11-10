@@ -152,32 +152,26 @@ export function mapSchemeToDbRecord(scheme: Scheme): DbSchemeRecord {
   };
 }
 
+
+const UPDATE_DATASET_SQL = `
+  UPDATE dataset_info
+  SET dataset_version = $1, last_refreshed_at = NOW()
+  WHERE id = 1
+`;
+
 const UPSERT_SCHEME_SQL = `
   INSERT INTO schemes (
-    slug,
-    title,
-    short_description,
-    full_description,
-    type,
-    scope,
-    state,
-    authority,
-    category,
-    financial_benefit,
-    deadline,
-    is_active,
-    official_url,
-    application_url,
-    details,
-    rules,
-    required_documents,
-    sources,
-    trust_data,
+    slug, title, short_description, full_description,
+    type, scope, state, authority, category,
+    financial_benefit, deadline, is_active,
+    official_url, application_url, details, rules,
+    required_documents, sources, trust_data, imported_by,
     updated_at
   ) VALUES (
-    $1, $2, $3, $4, $5, $6, $7, $8, $9, $10,
-    $11, $12, $13, $14, $15, $16, $17, $18, $19, NOW()
-  )
+  $1, $2, $3, $4, $5, $6, $7, $8, $9, $10,
+  $11, $12, $13, $14, $15, $16, $17, $18, $19,'seed_script',
+  NOW()
+)
   ON CONFLICT (slug) DO UPDATE SET
     title = EXCLUDED.title,
     short_description = EXCLUDED.short_description,
@@ -197,10 +191,10 @@ const UPSERT_SCHEME_SQL = `
     required_documents = EXCLUDED.required_documents,
     sources = EXCLUDED.sources,
     trust_data = EXCLUDED.trust_data,
+    imported_by = EXCLUDED.imported_by,
     updated_at = NOW()
   RETURNING id, slug;
 `;
-
 /**
  * Validates and seeds scholarship schemes into the PostgreSQL database.
  */
@@ -219,7 +213,7 @@ export async function seedSchemes(options: SeedOptions = {}): Promise<SeedReport
   log(`[Scheme Seeder] Reading scheme datasets from ${schemesDir}...`);
 
   if (!fs.existsSync(schemesDir)) {
-    throw new Error(`[Scheme Seeder] Directory not found: ${schemesDir}`);
+    throw new Error(`[Scheme Seeder] Directory not found: ${schemesDir} `);
   }
 
   const files = fs
@@ -228,10 +222,10 @@ export async function seedSchemes(options: SeedOptions = {}): Promise<SeedReport
     .sort((a, b) => a.localeCompare(b));
 
   if (files.length === 0) {
-    throw new Error(`[Scheme Seeder] No scheme JSON files found in ${schemesDir}`);
+    throw new Error(`[Scheme Seeder] No scheme JSON files found in ${schemesDir} `);
   }
 
-  log(`[Scheme Seeder] Found ${files.length} scheme dataset file(s). Validating records...`);
+  log(`[Scheme Seeder] Found ${files.length} scheme dataset file(s).Validating records...`);
 
   const validRecords: Array<{ file: string; record: DbSchemeRecord }> = [];
   const results: SeedRecordResult[] = [];
@@ -247,7 +241,7 @@ export async function seedSchemes(options: SeedOptions = {}): Promise<SeedReport
       if (!validation.success || !validation.data) {
         invalidCount++;
         const errMsg = validation.errors?.join('; ') ?? 'Validation failed against schema';
-        logErr(`[Scheme Seeder] Validation error in ${file}: ${errMsg}`);
+        logErr(`[Scheme Seeder] Validation error in ${file}: ${errMsg} `);
         results.push({
           file,
           slug: json.id || json.slug || file,
@@ -263,7 +257,7 @@ export async function seedSchemes(options: SeedOptions = {}): Promise<SeedReport
     } catch (err) {
       invalidCount++;
       const errMsg = err instanceof Error ? err.message : String(err);
-      logErr(`[Scheme Seeder] Syntax / Read error in ${file}: ${errMsg}`);
+      logErr(`[Scheme Seeder]Syntax / Read error in ${file}: ${errMsg} `);
       results.push({
         file,
         slug: file,
@@ -276,7 +270,7 @@ export async function seedSchemes(options: SeedOptions = {}): Promise<SeedReport
 
   if (invalidCount > 0 && !dryRun) {
     throw new Error(
-      `[Scheme Seeder] Aborted seeding: ${invalidCount} dataset file(s) failed validation. Fix validation errors before writing to database.`
+      `[Scheme Seeder] Aborted seeding: ${invalidCount} dataset file(s) failed validation.Fix validation errors before writing to database.`
     );
   }
 
@@ -293,10 +287,10 @@ export async function seedSchemes(options: SeedOptions = {}): Promise<SeedReport
     } catch (connErr) {
       const msg = connErr instanceof Error ? connErr.message : String(connErr);
       if (dryRun) {
-        log(`[Scheme Seeder] Notice: Database unreachable in dry-run mode (${msg || 'offline'}). Proceeding with dataset validation report.`);
+        log(`[Scheme Seeder]Notice: Database unreachable in dry - run mode(${msg || 'offline'}).Proceeding with dataset validation report.`);
         log('[Scheme Seeder] DRY-RUN MODE: No database changes will be written.');
         for (const item of validRecords) {
-          log(`[Scheme Seeder] [DRY-RUN] WOULD_INSERT: ${item.record.slug} ("${item.record.title}")`);
+          log(`[Scheme Seeder][DRY - RUN] WOULD_INSERT: ${item.record.slug} ("${item.record.title}")`);
           results.push({
             file: item.file,
             slug: item.record.slug,
@@ -304,7 +298,7 @@ export async function seedSchemes(options: SeedOptions = {}): Promise<SeedReport
             status: 'would_insert'
           });
         }
-        log(`[Scheme Seeder] DRY-RUN Summary: Valid=${validRecords.length}, WouldInsert=${validRecords.length}, WouldUpdate=0, Failed=${invalidCount}`);
+        log(`[Scheme Seeder]DRY - RUN Summary: Valid = ${validRecords.length}, WouldInsert = ${validRecords.length}, WouldUpdate = 0, Failed = ${invalidCount} `);
         return {
           totalFiles: files.length,
           validCount: validRecords.length,
@@ -317,18 +311,18 @@ export async function seedSchemes(options: SeedOptions = {}): Promise<SeedReport
           results
         };
       }
-      throw new Error(`[Scheme Seeder] Database connection failed: ${msg}`);
+      throw new Error(`[Scheme Seeder] Database connection failed: ${msg} `);
     }
   }
 
   try {
     // Check if schemes table exists
     const checkTableSql = `
-      SELECT EXISTS (
-        SELECT 1 FROM information_schema.tables
+      SELECT EXISTS(
+  SELECT 1 FROM information_schema.tables
         WHERE table_schema = 'public' AND table_name = 'schemes'
-      ) AS table_exists;
-    `;
+) AS table_exists;
+`;
     const tableRes = await client.query<{ table_exists: boolean }>(checkTableSql);
     const tableExists = Boolean(tableRes.rows[0]?.table_exists);
 
@@ -351,7 +345,7 @@ export async function seedSchemes(options: SeedOptions = {}): Promise<SeedReport
       for (const item of validRecords) {
         const isExisting = existingSlugs.has(item.record.slug);
         const status = isExisting ? 'would_update' : 'would_insert';
-        log(`[Scheme Seeder] [DRY-RUN] ${status.toUpperCase()}: ${item.record.slug} ("${item.record.title}")`);
+        log(`[Scheme Seeder][DRY - RUN] ${status.toUpperCase()}: ${item.record.slug} ("${item.record.title}")`);
         results.push({
           file: item.file,
           slug: item.record.slug,
@@ -363,7 +357,7 @@ export async function seedSchemes(options: SeedOptions = {}): Promise<SeedReport
       const wouldInsert = results.filter((r) => r.status === 'would_insert').length;
       const wouldUpdate = results.filter((r) => r.status === 'would_update').length;
 
-      log(`[Scheme Seeder] DRY-RUN Summary: Valid=${validRecords.length}, WouldInsert=${wouldInsert}, WouldUpdate=${wouldUpdate}, Failed=${invalidCount}`);
+      log(`[Scheme Seeder]DRY - RUN Summary: Valid = ${validRecords.length}, WouldInsert = ${wouldInsert}, WouldUpdate = ${wouldUpdate}, Failed = ${invalidCount} `);
 
       return {
         totalFiles: files.length,
@@ -420,7 +414,7 @@ export async function seedSchemes(options: SeedOptions = {}): Promise<SeedReport
             title: rec.title,
             status: 'updated'
           });
-          log(`[Scheme Seeder] UPDATED: ${rec.slug} ("${rec.title}")`);
+          log(`[Scheme Seeder]UPDATED: ${rec.slug} ("${rec.title}")`);
         } else {
           insertedCount++;
           results.push({
@@ -429,12 +423,13 @@ export async function seedSchemes(options: SeedOptions = {}): Promise<SeedReport
             title: rec.title,
             status: 'inserted'
           });
-          log(`[Scheme Seeder] INSERTED: ${rec.slug} ("${rec.title}")`);
+          log(`[Scheme Seeder]INSERTED: ${rec.slug} ("${rec.title}")`);
         }
       }
 
+      await client.query(UPDATE_DATASET_SQL, ['v1']);
       await client.query('COMMIT');
-      log(`[Scheme Seeder] Seeding successful! Inserted: ${insertedCount}, Updated: ${updatedCount}, Failed: ${invalidCount}`);
+      log(`[Scheme Seeder] Seeding successful! Inserted: ${insertedCount}, Updated: ${updatedCount}, Failed: ${invalidCount} `);
 
       return {
         totalFiles: files.length,
