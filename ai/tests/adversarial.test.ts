@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { checkAnswerGuard } from '../src/answerGuard.js';
 import { getDeterministicFallback } from '../src/fallback.js';
-import { SchemeMatch } from '../../engine/src/types.js';
+import { SchemeMatch } from '@scholarpath/engine';
 
 const mockMatch: SchemeMatch = {
   schemeId: 'nsp-central-sector-ug',

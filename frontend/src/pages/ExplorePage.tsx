@@ -1,7 +1,7 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { useProfile } from '../contexts/ProfileContext';
 import { schemeService } from '../services/schemeService';
-import { SchemeType, ScopeType } from '../types/scheme';
+import { Scheme, SchemeType, ScopeType } from '../types/scheme';
 import { EligibilityState, MANDATORY_ELIGIBILITY_DISCLAIMER } from '../types/eligibility';
 import { PageHeader } from '../components/layout/PageHeader';
 import { Card } from '../components/common/Card';
@@ -11,51 +11,93 @@ import { StatusBadge } from '../components/common/StatusBadge';
 import { TrustBadge } from '../components/common/TrustBadge';
 import { Button } from '../components/common/Button';
 import { Link } from 'react-router-dom';
-import { Search, Filter, ShieldCheck, ArrowRight } from 'lucide-react';
+import {
+  Search,
+  Filter,
+  ShieldCheck,
+  ArrowRight,
+  Loader2,
+  AlertCircle,
+  RefreshCw,
+  ChevronLeft,
+  ChevronRight
+} from 'lucide-react';
 
 export const ExplorePage: React.FC = () => {
   const { matches } = useProfile();
-  const allSchemes = useMemo(() => schemeService.getAllSchemes(), []);
+  const [schemes, setSchemes] = useState<Scheme[]>([]);
+  const [isLoading, setIsLoading] = useState<boolean>(true);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
-  const [searchQuery, setSearchQuery] = useState('');
+  // Multi-Dimensional Filter States
+  const [searchQuery, setSearchQuery] = useState<string>('');
   const [selectedType, setSelectedType] = useState<SchemeType | 'ALL'>('ALL');
   const [selectedScope, setSelectedScope] = useState<ScopeType | 'ALL'>('ALL');
   const [statusFilter, setStatusFilter] = useState<EligibilityState | 'ALL'>('ALL');
+  const [page, setPage] = useState<number>(1);
+  const [totalPages, setTotalPages] = useState<number>(1);
+  const [totalCount, setTotalCount] = useState<number>(0);
 
-  // Filter schemes with consistent eligibility status from shared matches
-  const filteredSchemes = useMemo(() => {
-    return allSchemes.filter((scheme) => {
-      // Find corresponding deterministic match result
-      const match = matches.find((m) => m.schemeId === scheme.id);
-      const matchStatus = match?.status || 'NEEDS_VERIFICATION';
+  const loadSchemes = useCallback(async () => {
+    setIsLoading(true);
+    setErrorMessage(null);
 
-      // 1. Keyword search filter
-      if (searchQuery.trim()) {
-        const q = searchQuery.toLowerCase().trim();
-        const matchesName = scheme.name.toLowerCase().includes(q);
-        const matchesDesc = scheme.description.toLowerCase().includes(q);
-        const matchesProvider = scheme.provider.toLowerCase().includes(q);
-        if (!matchesName && !matchesDesc && !matchesProvider) return false;
+    try {
+      const typeParam = selectedType === 'ALL' ? undefined : selectedType;
+      const scopeParam = selectedScope === 'ALL' ? undefined : selectedScope;
+
+      const result = await schemeService.fetchSchemes({
+        query: searchQuery,
+        type: typeParam,
+        scope: scopeParam,
+        page,
+        limit: 10,
+      });
+
+      setSchemes(result.schemes);
+      setTotalPages(result.totalPages);
+      setTotalCount(result.total);
+    } catch (err: unknown) {
+      // If backend fails, fallback to in-memory filter
+      try {
+        const fallback = schemeService.filterSchemes({
+          query: searchQuery,
+          type: selectedType === 'ALL' ? undefined : selectedType,
+          scope: selectedScope === 'ALL' ? undefined : selectedScope,
+        });
+        setSchemes(fallback);
+        setTotalPages(1);
+        setTotalCount(fallback.length);
+        setErrorMessage(null);
+      } catch {
+        setErrorMessage('Unable to load schemes catalog. Please check your backend connection.');
       }
+    } finally {
+      setIsLoading(false);
+    }
+  }, [searchQuery, selectedType, selectedScope, page]);
 
-      // 2. Scheme Type filter
-      if (selectedType !== 'ALL' && scheme.type !== selectedType) {
-        return false;
-      }
+  useEffect(() => {
+    loadSchemes();
+  }, [loadSchemes]);
 
-      // 3. Jurisdiction / Scope filter
-      if (selectedScope !== 'ALL' && scheme.scope !== selectedScope) {
-        return false;
-      }
-
-      // 4. Eligibility State filter
-      if (statusFilter !== 'ALL' && matchStatus !== statusFilter) {
-        return false;
-      }
-
-      return true;
+  // Client-side filtering by eligibility state across fetched schemes
+  const displayedSchemes = useMemo(() => {
+    if (statusFilter === 'ALL') return schemes;
+    return schemes.filter((scheme) => {
+      const match = matches.find((m) => m.schemeId === scheme.id || m.schemeId === scheme.slug);
+      const matchStatus: EligibilityState = match?.status || 'NEEDS_VERIFICATION';
+      return matchStatus === statusFilter;
     });
-  }, [allSchemes, matches, searchQuery, selectedType, selectedScope, statusFilter]);
+  }, [schemes, matches, statusFilter]);
+
+  const handleResetFilters = () => {
+    setSearchQuery('');
+    setSelectedType('ALL');
+    setSelectedScope('ALL');
+    setStatusFilter('ALL');
+    setPage(1);
+  };
 
   return (
     <div className="space-y-6">
@@ -82,7 +124,10 @@ export const ExplorePage: React.FC = () => {
             <Input
               placeholder="Search by name or provider..."
               value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
+              onChange={(e) => {
+                setSearchQuery(e.target.value);
+                setPage(1);
+              }}
               leftIcon={<Search className="w-4 h-4" />}
             />
           </div>
@@ -97,7 +142,10 @@ export const ExplorePage: React.FC = () => {
                 { value: 'NOT_MATCHED', label: 'Not Matched' },
               ]}
               value={statusFilter}
-              onChange={(e) => setStatusFilter(e.target.value as EligibilityState | 'ALL')}
+              onChange={(e) => {
+                setStatusFilter(e.target.value as EligibilityState | 'ALL');
+                setPage(1);
+              }}
             />
           </div>
 
@@ -111,7 +159,10 @@ export const ExplorePage: React.FC = () => {
                 { value: 'FELLOWSHIP', label: 'Fellowships' },
               ]}
               value={selectedType}
-              onChange={(e) => setSelectedType(e.target.value as SchemeType | 'ALL')}
+              onChange={(e) => {
+                setSelectedType(e.target.value as SchemeType | 'ALL');
+                setPage(1);
+              }}
             />
           </div>
 
@@ -119,49 +170,67 @@ export const ExplorePage: React.FC = () => {
             <Select
               options={[
                 { value: 'ALL', label: 'All Jurisdictions' },
-                { value: 'CENTRAL', label: 'Central Govt (NSP)' },
+                { value: 'CENTRAL', label: 'Central Govt (All-India)' },
                 { value: 'STATE', label: 'State Schemes (SSP / Domicile)' },
               ]}
               value={selectedScope}
-              onChange={(e) => setSelectedScope(e.target.value as ScopeType | 'ALL')}
+              onChange={(e) => {
+                setSelectedScope(e.target.value as ScopeType | 'ALL');
+                setPage(1);
+              }}
             />
           </div>
         </div>
       </div>
 
-      {/* Filtered Scheme Matches List */}
-      <div className="space-y-3">
-        <div className="flex items-center justify-between text-xs text-muted">
-          <span>Showing {filteredSchemes.length} of {allSchemes.length} verified schemes</span>
-          <span>Single Source of Truth Evaluation</span>
-        </div>
-
-        {filteredSchemes.length === 0 ? (
-          <Card className="text-center py-8">
-            <p className="text-sm font-bold text-ink">No schemes match your selected filters</p>
-            <p className="text-xs text-muted mt-1 mb-3">Try adjusting your search query or reset the filters to see all available schemes.</p>
-            <Button
-              size="sm"
-              variant="outline"
-              onClick={() => {
-                setSearchQuery('');
-                setSelectedType('ALL');
-                setSelectedScope('ALL');
-                setStatusFilter('ALL');
-              }}
-            >
-              Reset All Filters
+      {/* Error Banner */}
+      {errorMessage && (
+        <Card className="border-gold/40 bg-gold-surface">
+          <div className="flex items-center justify-between gap-3 text-xs text-ink">
+            <div className="flex items-center gap-2">
+              <AlertCircle className="w-4 h-4 text-gold-hover shrink-0" />
+              <span>{errorMessage}</span>
+            </div>
+            <Button size="sm" variant="outline" onClick={loadSchemes} leftIcon={<RefreshCw className="w-3.5 h-3.5" />}>
+              Retry
             </Button>
-          </Card>
-        ) : (
-          filteredSchemes.map((scheme) => {
-            const match = matches.find((m) => m.schemeId === scheme.id);
+          </div>
+        </Card>
+      )}
+
+      {/* Loading State */}
+      {isLoading ? (
+        <div className="flex flex-col items-center justify-center p-12 space-y-3 bg-paper-surface border border-line rounded-lg">
+          <Loader2 className="w-6 h-6 animate-spin text-ink" />
+          <p className="text-xs text-muted font-medium">Loading verified schemes from government registry...</p>
+        </div>
+      ) : displayedSchemes.length === 0 ? (
+        /* Empty State */
+        <Card className="text-center py-8">
+          <p className="text-sm font-bold text-ink">No schemes match your selected filters</p>
+          <p className="text-xs text-muted mt-1 mb-3">
+            Try adjusting your search query, scheme type, jurisdiction, or eligibility state filters.
+          </p>
+          <Button size="sm" variant="outline" onClick={handleResetFilters}>
+            Reset All Filters
+          </Button>
+        </Card>
+      ) : (
+        /* Scheme List */
+        <div className="space-y-3">
+          <div className="flex items-center justify-between text-xs text-muted px-1">
+            <span>Showing {displayedSchemes.length} of {totalCount || schemes.length} verified schemes</span>
+            {totalPages > 1 && <span>Page {page} of {totalPages}</span>}
+          </div>
+
+          {displayedSchemes.map((scheme) => {
+            const match = matches.find((m) => m.schemeId === scheme.id || m.schemeId === scheme.slug);
             const status: EligibilityState = match?.status || 'NEEDS_VERIFICATION';
 
             return (
               <Card key={scheme.id}>
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-                  <div className="space-y-1.5">
+                  <div className="space-y-1.5 flex-1">
                     <div className="flex flex-wrap items-center gap-2">
                       <StatusBadge status={status} size="sm" />
                       <TrustBadge tier={scheme.sourceTier} sourceName={scheme.officialSource} />
@@ -196,9 +265,36 @@ export const ExplorePage: React.FC = () => {
                 </div>
               </Card>
             );
-          })
-        )}
-      </div>
+          })}
+
+          {/* Pagination Controls */}
+          {totalPages > 1 && (
+            <div className="flex items-center justify-center gap-2 pt-4">
+              <Button
+                size="sm"
+                variant="outline"
+                disabled={page <= 1}
+                onClick={() => setPage((p) => Math.max(1, p - 1))}
+                leftIcon={<ChevronLeft className="w-3.5 h-3.5" />}
+              >
+                Previous
+              </Button>
+              <span className="text-xs text-muted font-medium px-2">
+                Page {page} of {totalPages}
+              </span>
+              <Button
+                size="sm"
+                variant="outline"
+                disabled={page >= totalPages}
+                onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+                rightIcon={<ChevronRight className="w-3.5 h-3.5" />}
+              >
+                Next
+              </Button>
+            </div>
+          )}
+        </div>
+      )}
     </div>
   );
 };

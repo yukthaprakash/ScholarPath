@@ -47,10 +47,10 @@ export const ProfilePage: React.FC = () => {
   const [tempProfile, setTempProfile] = useState<StudentProfile>({ ...profile });
   const [isRecalculating, setIsRecalculating] = useState(false);
 
-  const handleRecalculate = () => {
+  const handleRecalculate = async () => {
     setIsRecalculating(true);
     try {
-      const res = recalculateEligibility();
+      const res = await recalculateEligibility();
       if (res.success) {
         setToast({
           show: true,

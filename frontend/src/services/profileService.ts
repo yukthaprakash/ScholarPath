@@ -1,6 +1,8 @@
 import { StudentProfile } from '../types/profile';
 import { PassportDocument, AvailabilityStatus, VerificationStatus } from '../types/passport';
 import { DEFAULT_DEMO_PROFILE } from '../fixtures/defaultDemoProfile';
+import { apiClient } from './apiClient';
+import { toBackendProfile, toFrontendProfile, BackendProfileRecord } from './profileAdapter';
 
 const GENERIC_PROFILE_STORAGE_KEY = 'scholarpath_student_profile';
 
@@ -114,7 +116,6 @@ export class ProfileService {
       degreeName: '',
       branch: '',
       collegeName: '',
-      university: '',
       collegeState: 'Karnataka',
       yearOfStudy: 1,
       academicYear: '2026-27',
@@ -122,8 +123,13 @@ export class ProfileService {
       isCgpa: false,
       previousYearPassed: true,
       institutionType: 'AIDED',
+      isCustomInstitution: false,
+      isCustomCourse: false,
       annualFamilyIncome: 0,
       hasIncomeCertificate: false,
+      incomeCertificateValidity: '',
+      incomeSource: 'Salaried / Private Service',
+      familySize: 4,
       isSingleParentChild: false,
       isOrphan: false,
       isFirstGenerationLearner: false,
@@ -136,15 +142,15 @@ export class ProfileService {
   }
 
   /**
-   * Load profile from localStorage scoped to user ID, falling back safely
+   * Load profile from localStorage scoped to user ID, falling back to generic storage or demo profile
    */
   public getProfile(userId?: string, userMeta?: { id: string; name: string; email: string }): StudentProfile {
-    // 1. Check user-specific storage
+    // 1. Check user-scoped storage key
     if (userId) {
       try {
-        const stored = localStorage.getItem(this.getStorageKey(userId));
-        if (stored) {
-          const parsed = JSON.parse(stored);
+        const scoped = localStorage.getItem(this.getStorageKey(userId));
+        if (scoped) {
+          const parsed = JSON.parse(scoped);
           return this.sanitizeProfile(parsed);
         }
       } catch {
@@ -210,6 +216,49 @@ export class ProfileService {
     const demo = { ...DEFAULT_DEMO_PROFILE, updatedAt: new Date().toISOString() };
     this.saveProfile(demo, 'demo-user-vraj');
     return demo;
+  }
+
+  /**
+   * Fetch authenticated user's profile from real backend API: GET /api/v1/profile
+   */
+  public async getProfileFromBackend(userId?: string): Promise<StudentProfile> {
+    const cached = this.getProfile(userId);
+    try {
+      const response = await apiClient.get<{ profile: BackendProfileRecord }>('/profile');
+      if (response && response.profile) {
+        // Map backend record to frontend model, merging with cached details for any non-persisted UI fields
+        const mapped = toFrontendProfile(response.profile, cached);
+        this.saveProfile(mapped, userId);
+        return mapped;
+      }
+      return cached;
+    } catch (err) {
+      // Propagate error to caller for clear UI error states, but retain local cache
+      throw err;
+    }
+  }
+
+  /**
+   * Persist student profile updates to real backend API: PUT /api/v1/profile
+   */
+  public async saveProfileToBackend(profile: StudentProfile, userId?: string): Promise<StudentProfile> {
+    const sanitized = this.sanitizeProfile(profile);
+    const payload = toBackendProfile(sanitized);
+    const targetUserId = userId || profile.userId;
+    try {
+      const response = await apiClient.put<{ profile: BackendProfileRecord }>('/profile', payload);
+      if (response && response.profile) {
+        const mapped = toFrontendProfile(response.profile, sanitized);
+        this.saveProfile(mapped, targetUserId);
+        return mapped;
+      }
+      this.saveProfile(sanitized, targetUserId);
+      return sanitized;
+    } catch (err) {
+      // On failure, save locally as draft but re-throw so UI can notify the user
+      this.saveProfile(sanitized, targetUserId);
+      throw err;
+    }
   }
 
   /**

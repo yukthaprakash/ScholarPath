@@ -1,28 +1,107 @@
-import React from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { useProfile } from '../contexts/ProfileContext';
 import { schemeService } from '../services/schemeService';
+import { eligibilityService, BackendSchemeExplanation } from '../services/eligibilityService';
+import { Scheme } from '../types/scheme';
 import { MANDATORY_ELIGIBILITY_DISCLAIMER } from '../types/eligibility';
 import { PageHeader } from '../components/layout/PageHeader';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '../components/common/Card';
 import { StatusBadge } from '../components/common/StatusBadge';
 import { TrustBadge } from '../components/common/TrustBadge';
 import { Button } from '../components/common/Button';
-import { ExternalLink, ArrowLeft, ShieldCheck, Calendar, AlertCircle } from 'lucide-react';
+import { Select } from '../components/common/Select';
+import {
+  ExternalLink,
+  ArrowLeft,
+  ShieldCheck,
+  Calendar,
+  AlertCircle,
+  Sparkles,
+  Loader2
+} from 'lucide-react';
 
 export const SchemeDetailPage: React.FC = () => {
   const { slug } = useParams<{ slug: string }>();
   const { matches } = useProfile();
 
-  const scheme = slug
-    ? schemeService.getSchemeByIdOrSlug(slug)
-    : schemeService.getAllSchemes()[0];
+  const [scheme, setScheme] = useState<Scheme | null>(null);
+  const [explanation, setExplanation] = useState<BackendSchemeExplanation | null>(null);
+  const [selectedLanguage, setSelectedLanguage] = useState<'en' | 'kn' | 'hi'>('en');
+  const [isLoadingScheme, setIsLoadingScheme] = useState<boolean>(true);
+  const [isLoadingExplanation, setIsLoadingExplanation] = useState<boolean>(false);
+  const [error, setError] = useState<string | null>(null);
 
-  if (!scheme) {
+  // 1. Load Scheme Metadata
+  const loadScheme = useCallback(async () => {
+    if (!slug) return;
+    setIsLoadingScheme(true);
+    setError(null);
+
+    try {
+      const data = await schemeService.fetchSchemeBySlug(slug);
+      setScheme(data);
+    } catch {
+      // Try local fallback
+      const local = schemeService.getSchemeByIdOrSlug(slug);
+      if (local) {
+        setScheme(local);
+      } else {
+        setError(`Scholarship scheme '${slug}' could not be found.`);
+      }
+    } finally {
+      setIsLoadingScheme(false);
+    }
+  }, [slug]);
+
+  // 2. Load AI Plain-Language Explanation
+  const loadExplanation = useCallback(async (lang: 'en' | 'kn' | 'hi') => {
+    if (!slug) return;
+    setIsLoadingExplanation(true);
+
+    try {
+      const result = await eligibilityService.explainWithBackend({
+        schemeSlug: slug,
+        language: lang,
+      });
+
+      if ('explanation' in result) {
+        setExplanation(result as BackendSchemeExplanation);
+      }
+    } catch {
+      // Explanation API unavailable: non-fatal, deterministic receipt continues with engine data
+    } finally {
+      setIsLoadingExplanation(false);
+    }
+  }, [slug]);
+
+  useEffect(() => {
+    loadScheme();
+  }, [loadScheme]);
+
+  useEffect(() => {
+    if (scheme) {
+      loadExplanation(selectedLanguage);
+    }
+  }, [scheme, selectedLanguage, loadExplanation]);
+
+  if (isLoadingScheme) {
+    return (
+      <div className="flex flex-col items-center justify-center p-16 space-y-3">
+        <Loader2 className="w-8 h-8 animate-spin text-ink" />
+        <p className="text-sm text-muted font-medium">Retrieving verified scheme rules and criteria...</p>
+      </div>
+    );
+  }
+
+  if (error || !scheme) {
     return (
       <div className="space-y-6 max-w-xl mx-auto py-12 text-center">
+        <AlertCircle className="w-8 h-8 text-red mx-auto" />
         <h2 className="text-xl font-bold text-ink">Scheme Not Found</h2>
-        <p className="text-xs text-muted">The requested scheme could not be located in the AY 2026–27 verified catalogue.</p>
+        <p className="text-xs text-muted">
+          {error || `The requested scheme '${slug}' could not be located in the AY 2026–27 verified catalogue.`}
+        </p>
         <Link to="/explore">
           <Button variant="outline" leftIcon={<ArrowLeft className="w-3.5 h-3.5" />}>
             Back to Scheme Directory
@@ -32,7 +111,7 @@ export const SchemeDetailPage: React.FC = () => {
     );
   }
 
-  const match = matches.find((m) => m.schemeId === scheme.id);
+  const match = matches.find((m) => m.schemeId === scheme.id || m.schemeId === slug);
   const status = match?.status || 'NEEDS_VERIFICATION';
   const clauses = match?.ruleTrace.clauses || [];
   const preflights = match?.preflightChecks || [];
@@ -71,8 +150,73 @@ export const SchemeDetailPage: React.FC = () => {
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Main 2 Cols: Eligibility Receipt */}
+        {/* Main 2 Cols: AI Plain Language Explanation & Eligibility Receipt */}
         <div className="lg:col-span-2 space-y-6">
+          {/* AI Plain-Language Explanation Card */}
+          <Card variant="accent-gold">
+            <CardHeader>
+              <div className="flex items-center justify-between gap-2 flex-wrap">
+                <div className="flex items-center gap-2">
+                  <Sparkles className="w-4 h-4 text-ink" />
+                  <CardTitle className="text-base">Authoritative AI Explanation</CardTitle>
+                </div>
+                <div className="w-36">
+                  <Select
+                    options={[
+                      { value: 'en', label: 'English' },
+                      { value: 'kn', label: 'ಕನ್ನಡ (Kannada)' },
+                      { value: 'hi', label: 'हिंदी (Hindi)' },
+                    ]}
+                    value={selectedLanguage}
+                    onChange={(e) => setSelectedLanguage(e.target.value as 'en' | 'kn' | 'hi')}
+                  />
+                </div>
+              </div>
+              <CardDescription>
+                Authoritative plain-language breakdown grounded strictly in rule engine evaluation.
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              {isLoadingExplanation ? (
+                <div className="flex items-center gap-2 text-xs text-muted py-3">
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                  <span>Synthesizing plain-language explanation in {selectedLanguage.toUpperCase()}...</span>
+                </div>
+              ) : explanation ? (
+                <div className="space-y-4">
+                  <p className="text-xs text-ink/90 leading-relaxed font-medium bg-paper-surface/60 p-3 rounded border border-line">
+                    {explanation.explanation}
+                  </p>
+
+                  <div className="flex items-center gap-2 text-[10px] text-muted">
+                    <ShieldCheck className="w-3.5 h-3.5 text-green" />
+                    <span>
+                      {explanation.isFallback
+                        ? 'Grounded deterministic explanation (zero LLM hallucinations)'
+                        : 'Gemini AI explanation verified for consistency against pure rule engine'}
+                    </span>
+                  </div>
+
+                  {explanation.details.nextSteps && explanation.details.nextSteps.length > 0 && (
+                    <div className="space-y-1.5 pt-1">
+                      <span className="text-xs font-bold text-ink">Actionable Next Steps:</span>
+                      <ul className="space-y-1 text-xs text-muted list-disc list-inside">
+                        {explanation.details.nextSteps.map((step, idx) => (
+                          <li key={idx}>{step}</li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
+                </div>
+              ) : (
+                <p className="text-xs text-muted">
+                  Connect your student profile to view tailored plain-language explanations in English, Kannada, or Hindi.
+                </p>
+              )}
+            </CardContent>
+          </Card>
+
+          {/* Deterministic Eligibility Receipt Card */}
           <Card>
             <CardHeader>
               <div className="flex items-center justify-between">
@@ -104,23 +248,29 @@ export const SchemeDetailPage: React.FC = () => {
                   <span className="col-span-2 text-right">Result</span>
                 </div>
                 <div className="divide-y divide-line">
-                  {clauses.map((clause, idx) => (
-                    <div key={idx} className="grid grid-cols-12 p-2.5 items-center">
-                      <div className="col-span-4 pr-1">
-                        <span className="font-semibold text-ink block">{clause.clauseName}</span>
-                        <span className="text-[10px] text-muted block truncate">{clause.citationSource}</span>
+                  {clauses.length > 0 ? (
+                    clauses.map((clause, idx) => (
+                      <div key={idx} className="grid grid-cols-12 p-2.5 items-center">
+                        <div className="col-span-4 pr-1">
+                          <span className="font-semibold text-ink block">{clause.clauseName}</span>
+                          <span className="text-[10px] text-muted block truncate">{clause.citationSource}</span>
+                        </div>
+                        <span className="col-span-3 text-muted pr-1 truncate">{clause.studentValue}</span>
+                        <span className="col-span-3 text-muted pr-1 truncate">{clause.expectedValue}</span>
+                        <div className="col-span-2 flex justify-end">
+                          <StatusBadge
+                            status={clause.result === 'PASS' ? 'READY' : clause.result === 'NEEDS_VERIFICATION' ? 'VERIFY' : 'MISSING'}
+                            size="sm"
+                            customLabel={clause.result === 'PASS' ? 'Pass' : clause.result === 'NEEDS_VERIFICATION' ? 'Audit' : 'Fail'}
+                          />
+                        </div>
                       </div>
-                      <span className="col-span-3 text-muted pr-1 truncate">{clause.studentValue}</span>
-                      <span className="col-span-3 text-muted pr-1 truncate">{clause.expectedValue}</span>
-                      <div className="col-span-2 flex justify-end">
-                        <StatusBadge
-                          status={clause.result === 'PASS' ? 'READY' : clause.result === 'NEEDS_VERIFICATION' ? 'VERIFY' : 'MISSING'}
-                          size="sm"
-                          customLabel={clause.result === 'PASS' ? 'Pass' : clause.result === 'NEEDS_VERIFICATION' ? 'Audit' : 'Fail'}
-                        />
-                      </div>
+                    ))
+                  ) : (
+                    <div className="p-4 text-center text-muted">
+                      No evaluation record found. Update your profile to generate an eligibility receipt.
                     </div>
-                  ))}
+                  )}
                 </div>
               </div>
             </CardContent>
@@ -157,18 +307,30 @@ export const SchemeDetailPage: React.FC = () => {
               </div>
               <CardDescription>Academic Year {scheme.academicYear} Cycle</CardDescription>
             </CardHeader>
-            <CardContent className="text-xs space-y-2">
-              <div className="flex justify-between py-1 border-b border-line/60">
+            <CardContent className="text-xs space-y-3">
+              <div className="flex justify-between items-center pb-2 border-b border-line">
+                <span className="text-muted">Financial Benefit:</span>
+                <span className="font-bold text-ink">{scheme.benefitAmountText}</span>
+              </div>
+              <div className="flex justify-between items-center pb-2 border-b border-line">
                 <span className="text-muted">Application Deadline:</span>
                 <span className="font-bold text-ink">{scheme.deadlineDate}</span>
               </div>
-              <div className="flex justify-between py-1 border-b border-line/60">
+              <div className="flex justify-between items-center pb-2 border-b border-line">
                 <span className="text-muted">Start Documents By:</span>
                 <span className="font-bold text-green">{scheme.startDocumentsByDate}</span>
               </div>
-              <div className="flex justify-between py-1">
-                <span className="text-muted">Benefit Amount:</span>
-                <span className="font-bold text-ink">{scheme.benefitAmountText}</span>
+              <div className="pt-2">
+                <a
+                  href={scheme.officialUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="w-full block"
+                >
+                  <Button size="sm" variant="primary" className="w-full" rightIcon={<ExternalLink className="w-3.5 h-3.5" />}>
+                    Official Application Link
+                  </Button>
+                </a>
               </div>
             </CardContent>
           </Card>
