@@ -1,4 +1,4 @@
-import { SchemeMatch } from '../engine/src/types.js';
+import { SchemeMatch } from '@scholarpath/engine';
 
 export function getDeterministicFallback(match: SchemeMatch): string {
   if (match.state === 'ELIGIBLE') {

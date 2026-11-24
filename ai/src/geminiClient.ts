@@ -1,7 +1,11 @@
 import { buildSystemPrompt, buildUserContext } from './promptBuilder.js';
 import { checkAnswerGuard } from './answerGuard.js';
 import { getDeterministicFallback } from './fallback.js';
+<<<<<<< HEAD
 import { SchemeMatch, StudentProfile } from '../engine/src/types.js';
+=======
+import { SchemeMatch, StudentProfile } from '@scholarpath/engine';
+>>>>>>> origin/main
 
 export interface ExplainMatchOptions {
   apiKey?: string;
@@ -74,7 +78,15 @@ export async function explainMatchWithAI(
       };
     }
 
-    const data = await response.json();
+    interface GeminiApiResponse {
+      candidates?: Array<{
+        content?: {
+          parts?: Array<{ text?: string }>;
+        };
+      }>;
+    }
+
+    const data = (await response.json()) as GeminiApiResponse;
     const generatedText = data?.candidates?.[0]?.content?.parts?.[0]?.text;
 
     if (!generatedText) {
@@ -105,14 +117,20 @@ export async function explainMatchWithAI(
       language,
       machine: language !== 'en',
     };
-  } catch (err: any) {
+  } catch (err: unknown) {
     clearTimeout(timeoutId);
+    const isAbort = err instanceof Error && err.name === 'AbortError';
+    const msg = err instanceof Error ? err.message : String(err);
     return {
       text: getDeterministicFallback(match),
       isFallback: true,
+<<<<<<< HEAD
       reason: err.name === 'AbortError' ? 'AI request timed out after 8 seconds.' : err.message,
       language,
       machine: language !== 'en',
+=======
+      reason: isAbort ? 'AI request timed out after 8 seconds.' : msg,
+>>>>>>> origin/main
     };
   }
 }

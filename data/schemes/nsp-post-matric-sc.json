@@ -57,13 +57,21 @@
     },
     {
       "key": "certificates.INCOME_CERTIFICATE",
+<<<<<<< HEAD
       "label": "Valid Competent Authority Income Certificate available",
+=======
+      "label": "Valid Revenue Department Income Certificate available",
+>>>>>>> origin/main
       "operator": "EQUALS",
       "expectedValue": true,
       "isActionable": true,
       "isRequired": true,
       "version": "1.0",
+<<<<<<< HEAD
       "clauseRef": "Clause 5.1"
+=======
+      "clauseRef": "Clause 6.1"
+>>>>>>> origin/main
     }
   ],
   "requiredCertificates": ["CASTE_CERTIFICATE", "INCOME_CERTIFICATE", "MARKSHEET"],
