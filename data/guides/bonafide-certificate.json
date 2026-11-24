@@ -1,0 +1,36 @@
+{
+  "certificateType": "BONAFIDE_CERTIFICATE",
+  "title": "How to Obtain Bonafide / Study Certificate from Institution",
+  "issuingAuthority": "Principal / Registrar / Head of Institution (College/University)",
+  "estimatedProcurementDays": 5,
+  "requiredDocuments": [
+    "College ID Card copy",
+    "Current Academic Year Admission Fee Receipt",
+    "Previous semester mark sheet or admission order (CET/COMEDK/Management)"
+  ],
+  "steps": [
+    {
+      "stepNumber": 1,
+      "title": "College Office Application",
+      "description": "Submit a requisition letter or portal request to the college academic administrative office with admission order and fee receipt."
+    },
+    {
+      "stepNumber": 2,
+      "title": "Verification by College Nodal Officer",
+      "description": "Administrative desk verifies registration number, course name, AISHE college code, and admission year."
+    },
+    {
+      "stepNumber": 3,
+      "title": "Principal Signature and Seal",
+      "description": "Obtain signed bonafide certificate on institution letterhead carrying official seal, AISHE code, and student photo."
+    }
+  ],
+  "validityPeriod": "Valid for the current academic year (2026-27).",
+  "sourceRef": {
+    "portal": "National Scholarship Portal Institution Verification Manual",
+    "url": "https://scholarships.gov.in",
+    "tier": 1,
+    "verifiedDate": "2026-10-05"
+  }
+}
+

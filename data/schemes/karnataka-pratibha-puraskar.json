@@ -1,0 +1,100 @@
+{
+  "id": "karnataka-pratibha-puraskar",
+  "title": "Karnataka D. Devaraj Urs Pratibha Puraskar Merit Incentive Scheme",
+  "shortDescription": "Merit cash award and incentive for meritorious Backward Classes (OBC/Cat-1/SC/ST) students scoring above 80% marks in degree courses.",
+  "offeringAuthority": "Backward Classes Welfare Department (BCWD), Govt. of Karnataka",
+  "authorityType": "STATE_GOVT",
+  "state": "KARNATAKA",
+  "schemeType": "WELFARE",
+  "benefitDetails": {
+    "financialAmountPerYear": 20000,
+    "description": "One-time cash incentive award of Rs 20,000 for degree students achieving academic distinction."
+  },
+  "applicationWindow": {
+    "startDate": "2026-08-01",
+    "endDate": "2026-11-30",
+    "academicYear": "2026-27"
+  },
+  "officialUrl": "https://bcwd.karnataka.gov.in",
+  "applicationUrl": "https://ssp.postmatric.karnataka.gov.in",
+  "lastVerified": "2026-10-05",
+  "sourceCitation": {
+    "portalName": "Backward Classes Welfare Department Portal, Karnataka",
+    "url": "https://bcwd.karnataka.gov.in",
+    "tier": 1,
+    "clauseRef": "Pratibha Puraskar Notification 2026 Section 2",
+    "verifiedDate": "2026-10-05",
+    "readOn": "2026-10-05"
+  },
+  "rules": [
+    {
+      "key": "demographics.domicileState",
+      "label": "Must have Karnataka domicile with minimum 7 years study in Karnataka",
+      "operator": "EQUALS",
+      "expectedValue": "KARNATAKA",
+      "isActionable": false,
+      "isRequired": true,
+      "version": "1.0",
+      "clauseRef": "Clause 2.1"
+    },
+    {
+      "key": "personal.casteCategory",
+      "label": "Must belong to Backward Classes (Cat-1/2A/3A/3B/SC/ST)",
+      "operator": "IN_ARRAY",
+      "expectedValue": ["OBC", "SC", "ST"],
+      "isActionable": false,
+      "isRequired": true,
+      "version": "1.0",
+      "clauseRef": "Clause 2.2"
+    },
+    {
+      "key": "academic.educationLevel",
+      "label": "Enrolled in recognized Undergraduate degree course",
+      "operator": "EQUALS",
+      "expectedValue": "UNDERGRADUATE",
+      "isActionable": false,
+      "isRequired": true,
+      "version": "1.0",
+      "clauseRef": "Clause 3.1"
+    },
+    {
+      "key": "academic.currentYear",
+      "label": "Must be in Senior / Final year (Year 3 or higher) of degree course",
+      "operator": "GREATER_THAN_OR_EQUAL",
+      "expectedValue": 3,
+      "isActionable": false,
+      "isRequired": true,
+      "version": "1.0",
+      "clauseRef": "Clause 3.2"
+    },
+    {
+      "key": "academic.scorePercentage",
+      "label": "Academic distinction score >= 80% marks",
+      "operator": "GREATER_THAN_OR_EQUAL",
+      "expectedValue": 80,
+      "isActionable": true,
+      "isRequired": true,
+      "version": "1.0",
+      "clauseRef": "Clause 4.1"
+    },
+    {
+      "key": "certificates.MARKSHEET",
+      "label": "Valid University Degree Marksheet available",
+      "operator": "EQUALS",
+      "expectedValue": true,
+      "isActionable": true,
+      "isRequired": true,
+      "version": "1.0",
+      "clauseRef": "Clause 5.1"
+    }
+  ],
+  "requiredCertificates": ["MARKSHEET", "CASTE_CERTIFICATE", "DOMICILE_CERTIFICATE"],
+  "estimatedIssuanceDays": {
+    "MARKSHEET": 7,
+    "CASTE_CERTIFICATE": 21,
+    "DOMICILE_CERTIFICATE": 21
+  },
+  "isDemo": true,
+  "version": "1.0"
+}
+

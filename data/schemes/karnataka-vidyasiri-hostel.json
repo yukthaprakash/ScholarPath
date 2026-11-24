@@ -1,0 +1,90 @@
+{
+  "id": "karnataka-vidyasiri-hostel",
+  "title": "Karnataka Vidyasiri Food and Accommodation Scholarship Scheme",
+  "shortDescription": "Stipend of Rs 1,500/month for 10 months for OBC post-matric students who did not get admission to departmental government hostels.",
+  "offeringAuthority": "Backward Classes Welfare Department (BCWD), Govt. of Karnataka",
+  "authorityType": "STATE_GOVT",
+  "state": "KARNATAKA",
+  "schemeType": "HOSTEL_STIPEND",
+  "benefitDetails": {
+    "financialAmountPerYear": 15000,
+    "description": "Rs 1,500 per month for 10 months (Total Rs 15,000/year) food and accommodation stipend directly via DBT."
+  },
+  "applicationWindow": {
+    "startDate": "2026-08-01",
+    "endDate": "2026-11-30",
+    "academicYear": "2026-27"
+  },
+  "officialUrl": "https://ssp.postmatric.karnataka.gov.in",
+  "applicationUrl": "https://ssp.postmatric.karnataka.gov.in",
+  "lastVerified": "2026-10-05",
+  "sourceCitation": {
+    "portalName": "State Scholarship Portal (SSP Karnataka) / BCWD",
+    "url": "https://ssp.postmatric.karnataka.gov.in",
+    "tier": 1,
+    "clauseRef": "BCWD Vidyasiri Guidelines Section 2",
+    "verifiedDate": "2026-10-05",
+    "readOn": "2026-10-05"
+  },
+  "rules": [
+    {
+      "key": "demographics.domicileState",
+      "label": "Must be a permanent resident / domicile of Karnataka",
+      "operator": "EQUALS",
+      "expectedValue": "KARNATAKA",
+      "isActionable": false,
+      "isRequired": true,
+      "version": "1.0",
+      "clauseRef": "Clause 2.1"
+    },
+    {
+      "key": "personal.casteCategory",
+      "label": "Must belong to Backward Classes (OBC/Cat-1/2A/3A/3B)",
+      "operator": "IN_ARRAY",
+      "expectedValue": ["OBC", "SC", "ST"],
+      "isActionable": false,
+      "isRequired": true,
+      "version": "1.0",
+      "clauseRef": "Clause 2.2"
+    },
+    {
+      "key": "financial.annualHouseholdIncome",
+      "label": "Annual family income <= Rs 2,50,000",
+      "operator": "LESS_THAN_OR_EQUAL",
+      "expectedValue": 250000,
+      "isActionable": true,
+      "isRequired": true,
+      "version": "1.0",
+      "clauseRef": "Clause 3.1"
+    },
+    {
+      "key": "academic.scorePercentage",
+      "label": "Minimum previous exam score >= 55%",
+      "operator": "GREATER_THAN_OR_EQUAL",
+      "expectedValue": 55,
+      "isActionable": true,
+      "isRequired": true,
+      "version": "1.0",
+      "clauseRef": "Clause 4.1"
+    },
+    {
+      "key": "certificates.INCOME_CERTIFICATE",
+      "label": "Valid Revenue Department Income Certificate available",
+      "operator": "EQUALS",
+      "expectedValue": true,
+      "isActionable": true,
+      "isRequired": true,
+      "version": "1.0",
+      "clauseRef": "Clause 5.1"
+    }
+  ],
+  "requiredCertificates": ["INCOME_CERTIFICATE", "CASTE_CERTIFICATE", "DOMICILE_CERTIFICATE"],
+  "estimatedIssuanceDays": {
+    "INCOME_CERTIFICATE": 14,
+    "CASTE_CERTIFICATE": 21,
+    "DOMICILE_CERTIFICATE": 21
+  },
+  "isDemo": true,
+  "version": "1.0"
+}
+

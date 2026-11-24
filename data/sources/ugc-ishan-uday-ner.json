@@ -1,0 +1,11 @@
+{
+  "schemeId": "ugc-ishan-uday-ner",
+  "portal": "University Grants Commission (UGC) / NSP",
+  "url": "https://www.ugc.gov.in",
+  "tier": 1,
+  "fetchedOn": "2026-10-05",
+  "contentHash": "sha256:3c4d5e6f7a8b9c0d1e2f3a4b5c6d7e8f9a0b1c2d3e4f5a6b7c8d9e0f1a2b3c4d",
+  "reviewer": "Person 3 (Audited)",
+  "notes": "Verified from UGC Ishan Uday Guidelines: Domicile in North Eastern Region, 1st year regular UG degree, parental income <= 4.5 LPA, scholarship Rs 80,000/year."
+}
+

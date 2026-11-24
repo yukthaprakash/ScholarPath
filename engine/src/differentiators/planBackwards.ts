@@ -15,17 +15,19 @@ export function planBackwards(
   scheme: Scheme,
   today: string = '2026-10-05'
 ): BackwardsPlan | null {
-  const deadlineStr = scheme.applicationWindow.endDate;
+  const deadlineStr = scheme.applicationWindow?.endDate;
   if (!deadlineStr) return null;
 
   const deadlineMs = new Date(deadlineStr).getTime();
   const todayMs = new Date(today).getTime();
 
+  if (isNaN(deadlineMs) || isNaN(todayMs)) return null;
+
+  const bufferDays = 2; // Mandatory 2-day buffer prior to portal deadline
   const steps: BackwardsPlanStep[] = [];
   let isFeasible = true;
-  let totalLeadDays = 5; // Final submission lead buffer
 
-  // Calculate required certificate procurement lead time
+  // Calculate required certificate procurement lead time using MAX duration
   let maxCertLeadDays = 0;
   for (const cert of scheme.requiredCertificates) {
     const days = scheme.estimatedIssuanceDays?.[cert] ?? DEFAULT_ISSUANCE_DAYS[cert] ?? 15;
@@ -34,8 +36,7 @@ export function planBackwards(
     }
   }
 
-  totalLeadDays += maxCertLeadDays;
-
+  const totalLeadDays = maxCertLeadDays + bufferDays;
   const latestStartDateMs = deadlineMs - totalLeadDays * 24 * 60 * 60 * 1000;
   const latestStartDate = new Date(latestStartDateMs).toISOString().split('T')[0];
 
@@ -43,17 +44,37 @@ export function planBackwards(
     isFeasible = false;
   }
 
-  // Build step 1: Document procurement
+  // Determine urgency bucket
+  const msPerDay = 24 * 60 * 60 * 1000;
+  const daysUntilDeadline = Math.floor((deadlineMs - todayMs) / msPerDay);
+  const daysUntilStart = Math.floor((latestStartDateMs - todayMs) / msPerDay);
+
+  let urgencyBucket: 'EXPIRED' | 'CRITICAL' | 'URGENT' | 'UPCOMING' | 'COMFORTABLE';
+  if (daysUntilDeadline < 0) {
+    urgencyBucket = 'EXPIRED';
+  } else if (!isFeasible) {
+    urgencyBucket = 'CRITICAL';
+  } else if (daysUntilStart <= 7) {
+    urgencyBucket = 'URGENT';
+  } else if (daysUntilStart <= 21) {
+    urgencyBucket = 'UPCOMING';
+  } else {
+    urgencyBucket = 'COMFORTABLE';
+  }
+
+  // Build document procurement steps
   let stepNum = 1;
+  const targetSubmissionPrepMs = deadlineMs - bufferDays * msPerDay;
+
   for (const cert of scheme.requiredCertificates) {
     const days = scheme.estimatedIssuanceDays?.[cert] ?? DEFAULT_ISSUANCE_DAYS[cert] ?? 15;
-    const certTargetMs = deadlineMs - 7 * 24 * 60 * 60 * 1000;
-    const certStartMs = certTargetMs - days * 24 * 60 * 60 * 1000;
+    const certTargetMs = targetSubmissionPrepMs;
+    const certStartMs = certTargetMs - days * msPerDay;
 
     steps.push({
       stepNumber: stepNum++,
       title: `Apply for ${cert.replace('_', ' ')}`,
-      description: `Apply at nearest Seva Sindhu / MeeSeva / CSC centre. Takes approx ${days} days.`,
+      description: `Apply at nearest Seva Sindhu / MeeSeva / CSC centre. Takes approx ${days} days (conservative max).`,
       startDate: new Date(certStartMs).toISOString().split('T')[0],
       targetDate: new Date(certTargetMs).toISOString().split('T')[0],
       isCriticalPath: days === maxCertLeadDays,
@@ -61,12 +82,12 @@ export function planBackwards(
     });
   }
 
-  // Build final submission step
+  // Build final submission step (with 2-day buffer)
   steps.push({
     stepNumber: stepNum,
     title: `Final Portal Online Submission for ${scheme.title}`,
-    description: `Upload verified certificates and submit application on ${scheme.sourceCitation.portalName}.`,
-    startDate: new Date(deadlineMs - 3 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+    description: `Upload verified certificates and submit application on ${scheme.sourceCitation.portalName} with 2-day safety buffer.`,
+    startDate: new Date(targetSubmissionPrepMs).toISOString().split('T')[0],
     targetDate: deadlineStr,
     isCriticalPath: true,
   });
@@ -76,8 +97,11 @@ export function planBackwards(
     deadline: deadlineStr,
     isFeasible,
     feasibilityReason: isFeasible
-      ? `Start document procurement by ${latestStartDate} to meet ${deadlineStr} deadline.`
-      : `CRITICAL DEADLINE WARNING: Latest required start date (${latestStartDate}) is already past today's date (${today}). Urgent action required.`,
+      ? `Start document procurement by ${latestStartDate} to meet ${deadlineStr} deadline with a 2-day buffer.`
+      : `CRITICAL DEADLINE WARNING: Latest required start date (${latestStartDate}) is already past today's date (${today}). Infeasible under standard processing times.`,
     steps,
+    bufferDays,
+    urgencyBucket,
+    latestStartDate,
   };
 }

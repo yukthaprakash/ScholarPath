@@ -1,0 +1,37 @@
+{
+  "certificateType": "DOMICILE_CERTIFICATE",
+  "title": "How to Obtain Domicile / Residence Certificate",
+  "issuingAuthority": "Tahsildar / Sub-Divisional Magistrate / Revenue Department",
+  "estimatedProcurementDays": 21,
+  "requiredDocuments": [
+    "Continuous 7-year study certificate in Karnataka (signed by Block Education Officer - BEO)",
+    "Aadhaar Card and Ration Card of parents",
+    "Residential property tax receipt or electricity bill",
+    "Affidavit verifying permanent resident status"
+  ],
+  "steps": [
+    {
+      "stepNumber": 1,
+      "title": "Document Collection and Counter-signature",
+      "description": "Collect study certificates from 1st standard to 10th/12th and get countersigned by jurisdictional BEO/DDPU."
+    },
+    {
+      "stepNumber": 2,
+      "title": "Seva Sindhu Online Submission",
+      "description": "Upload address proofs and countersigned study certificates on Seva Sindhu portal under Residence/Domicile service."
+    },
+    {
+      "stepNumber": 3,
+      "title": "Digital Approval",
+      "description": "Tahsildar issues digitally verified domicile certificate with unique RD tracking number."
+    }
+  ],
+  "validityPeriod": "Life-time or as required by state scholarship portals.",
+  "sourceRef": {
+    "portal": "Seva Sindhu Karnataka",
+    "url": "https://sevasindhu.karnataka.gov.in",
+    "tier": 1,
+    "verifiedDate": "2026-10-05"
+  }
+}
+

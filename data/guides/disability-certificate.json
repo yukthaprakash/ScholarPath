@@ -1,0 +1,37 @@
+{
+  "certificateType": "DISABILITY_CERTIFICATE",
+  "title": "How to Obtain UDID Card / Disability Certificate",
+  "issuingAuthority": "District Medical Board / Chief Medical Officer (CMO) / Swavlamban Portal",
+  "estimatedProcurementDays": 30,
+  "requiredDocuments": [
+    "Aadhaar Card and proof of address",
+    "Passport size color photographs showing disability",
+    "Clinical diagnosis / medical reports from authorized government hospital specialist",
+    "Previous disability certificate if applying for renewal or UDID conversion"
+  ],
+  "steps": [
+    {
+      "stepNumber": 1,
+      "title": "Register on Swavlamban Portal",
+      "description": "Create an account on swavlambancard.gov.in and fill personal details, disability category, and medical records."
+    },
+    {
+      "stepNumber": 2,
+      "title": "Medical Board Assessment",
+      "description": "Attend the designated District Hospital Medical Board on appointment date for physical assessment and percentage determination."
+    },
+    {
+      "stepNumber": 3,
+      "title": "UDID Generation",
+      "description": "Medical authority approves and issues digital Unique Disability ID (UDID) certificate indicating percentage of disability (minimum 40% required for scholarship eligibility)."
+    }
+  ],
+  "validityPeriod": "Permanent for irreversible conditions; 5 years temporary for progressive conditions.",
+  "sourceRef": {
+    "portal": "Unique Disability ID (UDID) Portal, DEPwD, Govt. of India",
+    "url": "https://www.swavlambancard.gov.in",
+    "tier": 1,
+    "verifiedDate": "2026-10-05"
+  }
+}
+

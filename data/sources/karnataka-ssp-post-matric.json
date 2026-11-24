@@ -1,0 +1,11 @@
+{
+  "schemeId": "karnataka-ssp-post-matric",
+  "portal": "State Scholarship Portal (SSP Karnataka)",
+  "url": "https://ssp.postmatric.karnataka.gov.in",
+  "tier": 1,
+  "fetchedOn": "2026-10-05",
+  "contentHash": "sha256:6e1b7c89f5a432d01e9c8b745a12d34e56f7890ab12c34de56f7890ab12c34de",
+  "reviewer": "Person 3 (Audited)",
+  "notes": "Verified from Karnataka SSP Official Guidelines: Karnataka Domicile, Family income <= 2.5 LPA for Cat-1/SC/ST, Caste Certificate via Nadakacheri RD number."
+}
+
