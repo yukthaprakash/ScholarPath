@@ -71,3 +71,4 @@ describe('Golden Profiles: NSP Post-Matric OBC', () => {
     expect(res.state).toBe('NOT_MATCHED');
   });
 });
+

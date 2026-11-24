@@ -70,3 +70,4 @@ describe('Golden Profiles: Karnataka SSP Post-Matric', () => {
     expect(res.state).toBe('NOT_MATCHED');
   });
 });
+

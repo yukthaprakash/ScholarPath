@@ -71,3 +71,4 @@ describe('Golden Profiles: AICTE Pragati Degree', () => {
     expect(res.state).toBe('NOT_MATCHED');
   });
 });
+

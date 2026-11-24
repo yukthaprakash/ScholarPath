@@ -71,3 +71,4 @@ describe('Golden Profiles: NSP NMMSS', () => {
     expect(res.state).toBe('NOT_MATCHED');
   });
 });
+

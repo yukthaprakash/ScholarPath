@@ -20,3 +20,4 @@ In adherence to ScholarPath Law #2 and `DATA_STRATEGY.md Section 5`:
 | `karnataka-vidyasiri-hostel` | Vidyasiri Food & Accommodation Scheme | BCWD Karnataka | Ready for second reviewer | OBC/SC/ST, <= 2.5 LPA, non-hosteller |
 | `ugc-single-girl-child-pg` | UGC PG Scholarship for Single Girl Child | UGC | Ready for second reviewer | Single girl child, 1st yr PG, age <= 30 |
 | `ugc-ishan-uday-ner` | UGC Ishan Uday Special Scholarship for NER | UGC | Ready for second reviewer | NER domicile, 1st yr UG, <= 4.5 LPA |
+

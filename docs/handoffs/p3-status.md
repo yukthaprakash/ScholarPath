@@ -77,3 +77,4 @@
 3. **QA Sweep**:
    - Implement property-based tests (`fast-check`), performance benchmarks (<50ms), and `engine/scripts/data-check.ts`.
    - Tune `demo-student.json` to hit exact target metrics.
+

@@ -71,3 +71,4 @@ describe('Golden Profiles: Karnataka Pratibha Puraskar', () => {
     expect(res.state).toBe('NOT_MATCHED');
   });
 });
+

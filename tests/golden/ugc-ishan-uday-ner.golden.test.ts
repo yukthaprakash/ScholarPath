@@ -72,3 +72,4 @@ describe('Golden Profiles: UGC Ishan Uday NER', () => {
     expect(res.state).toBe('NOT_MATCHED');
   });
 });
+

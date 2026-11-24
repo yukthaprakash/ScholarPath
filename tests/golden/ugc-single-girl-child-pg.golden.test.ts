@@ -70,3 +70,4 @@ describe('Golden Profiles: UGC Single Girl Child PG', () => {
     expect(res.state).toBe('NOT_MATCHED');
   });
 });
+

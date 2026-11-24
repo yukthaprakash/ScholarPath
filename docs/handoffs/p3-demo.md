@@ -26,3 +26,4 @@
 3. **Unlock Engine**: Suggests obtaining Income Certificate and College Bonafide Certificate to unlock 4 additional schemes worth up to ₹87,000.
 4. **Pre-Flight Rejection Check**: Flags unverified income certificate year before submission to prevent portal rejection.
 5. **Critical Path Planner**: Generates backward timeline working backwards from the 31 October 2026 deadline.
+

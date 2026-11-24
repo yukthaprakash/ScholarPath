@@ -22,3 +22,4 @@ data/
 2. **Zero Fabrication:** Unverified values are explicitly omitted or marked UNKNOWN.
 3. **Two-Person Rule:** All schemes remain `isDemo: true` until an independent engineer signs off in `REVIEW.md`.
 4. **Golden Test Coverage:** Every scheme in `schemes/` is matched with an automated 3-profile golden test in `tests/golden/<slug>.golden.test.ts`.
+

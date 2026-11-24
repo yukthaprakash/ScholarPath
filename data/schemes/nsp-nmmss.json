@@ -30,7 +30,10 @@
       "key": "academic.educationLevel",
       "label": "Enrolled in Class 9 or 10 in secondary school",
       "operator": "IN_ARRAY",
-      "expectedValue": ["SCHOOL_CLASS_9_10", "SCHOOL_CLASS_11_12"],
+      "expectedValue": [
+        "SCHOOL_CLASS_9_10",
+        "SCHOOL_CLASS_11_12"
+      ],
       "isActionable": false,
       "isRequired": true,
       "version": "1.0",
@@ -40,7 +43,10 @@
       "key": "academic.instituteType",
       "label": "Studying in Government or Local Body / Aided school",
       "operator": "IN_ARRAY",
-      "expectedValue": ["GOVERNMENT", "AIDED"],
+      "expectedValue": [
+        "GOVERNMENT",
+        "AIDED"
+      ],
       "isActionable": false,
       "isRequired": true,
       "version": "1.0",
@@ -77,7 +83,11 @@
       "clauseRef": "Clause 5.1"
     }
   ],
-  "requiredCertificates": ["INCOME_CERTIFICATE", "MARKSHEET", "BONAFIDE_CERTIFICATE"],
+  "requiredCertificates": [
+    "INCOME_CERTIFICATE",
+    "MARKSHEET",
+    "BONAFIDE_CERTIFICATE"
+  ],
   "estimatedIssuanceDays": {
     "INCOME_CERTIFICATE": 14,
     "MARKSHEET": 7,

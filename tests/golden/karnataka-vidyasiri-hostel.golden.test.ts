@@ -70,3 +70,4 @@ describe('Golden Profiles: Karnataka Vidyasiri Hostel', () => {
     expect(res.state).toBe('NOT_MATCHED');
   });
 });
+
